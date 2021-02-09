@@ -6,7 +6,7 @@ import { FieldLabel, useFormData } from '@bfc/adaptive-form';
 import { LgEditor, LgEditorMode } from '@bfc/code-editor';
 import { FieldProps, useShellApi } from '@bfc/extension-client';
 import { filterTemplateDiagnostics } from '@bfc/indexers';
-import { CodeEditorSettings, LgMetaData, LgTemplateRef, LgType } from '@bfc/shared';
+import { CodeEditorSettings, LgMetaData, LgTemplateRef, LgType, LgTemplate } from '@bfc/shared';
 import { OpenConfirmModal } from '@bfc/ui-shared';
 import { jsx } from '@emotion/core';
 import formatMessage from 'format-message';
@@ -20,7 +20,13 @@ import { locateLgTemplatePosition } from './locateLgTemplatePosition';
 const structuredResponseDocumentUrl =
   'https://docs.microsoft.com/en-us/azure/bot-service/language-generation/language-generation-structured-response-template?view=azure-bot-service-4.0';
 const linkStyles = {
-  root: { fontSize: 12, ':hover': { textDecoration: 'none' }, ':active': { textDecoration: 'none' } },
+  root: {
+    fontSize: 12,
+    selectors: {
+      '&:hover': { textDecoration: 'none' },
+      '&:active': { textDecoration: 'none' },
+    },
+  },
 };
 
 const confirmDialogContentStyles = {
@@ -32,6 +38,17 @@ const confirmDialogContentTokens = {
 };
 
 const lspServerPath = '/lg-language-server';
+
+const activityTemplateType = 'Activity';
+const emptyTemplateBodyRegex = /^$|-(\s)?/;
+
+const shouldAllowResponseEditor = (template: LgTemplate) => {
+  return (
+    !template.body ||
+    emptyTemplateBodyRegex.test(template.body) ||
+    template.properties?.['$type'] === activityTemplateType
+  );
+};
 
 const tryGetLgMetaDataType = (lgText: string): string | null => {
   const lgRef = LgTemplateRef.parse(lgText);
@@ -57,8 +74,6 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
   const { label, id, description, value, name, uiOptions, required } = props;
   const { designerId, currentDialog, lgFiles, shellApi, projectId, locale, userSettings } = useShellApi();
   const formData = useFormData();
-
-  const [editorMode, setEditorMode] = React.useState<LgEditorMode>('codeEditor');
 
   let lgType = name;
   const $kind = formData?.$kind;
@@ -116,6 +131,11 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     body: getInitialTemplate(name, value),
   };
 
+  const allowResponseEditor = React.useMemo(() => shouldAllowResponseEditor(template), [template]);
+  const [editorMode, setEditorMode] = React.useState<LgEditorMode>(
+    allowResponseEditor ? 'responseEditor' : 'codeEditor'
+  );
+
   const diagnostics = lgFile ? filterTemplateDiagnostics(lgFile, template.name) : [];
 
   const lgOption = {
@@ -145,9 +165,6 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     shellApi.updateUserSettings({ codeEditor: settings });
   };
 
-  // TODO: update this logic to decide if the LG template is eligible for response editor view.
-  const structuredResponse = true;
-
   const renderConfirmDialogContent = React.useCallback(
     (text: React.ReactNode) => (
       <Stack styles={confirmDialogContentStyles} tokens={confirmDialogContentTokens}>
@@ -159,7 +176,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
 
   const modeChange = React.useCallback(async () => {
     let changeMode = true;
-    if (editorMode === 'codeEditor' && !structuredResponse) {
+    if (editorMode === 'codeEditor' && !allowResponseEditor) {
       changeMode = await OpenConfirmModal(
         formatMessage('Warning'),
         <React.Fragment>
@@ -185,9 +202,10 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
       );
     }
     if (changeMode) {
+      await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
       setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
     }
-  }, [editorMode, structuredResponse]);
+  }, [editorMode, allowResponseEditor]);
 
   const navigateToLgPage = React.useCallback(
     (lgFileId: string) => {
