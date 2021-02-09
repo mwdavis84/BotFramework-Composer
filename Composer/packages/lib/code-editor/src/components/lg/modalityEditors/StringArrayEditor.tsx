@@ -29,22 +29,16 @@ const styles: { link: ILinkStyles } = {
   },
 };
 
-const prosodyDefaultProps = {
-  key: 'value',
-};
+const prosodyDefaultProps = ['pitch', 'rate', 'volume'];
 
-const audioDefaultProps = {
-  src: 'value',
-};
+const audioDefaultProps = ['src'];
 
 const getSSMLProps = (tag: 'prosody' | 'audio' | 'break'): string => {
   if (tag === 'break') {
     return '';
   }
 
-  return Object.entries(tag === 'prosody' ? prosodyDefaultProps : audioDefaultProps)
-    .map(([key, value]) => `${key}="${value}"`)
-    .join(' ');
+  return (tag === 'prosody' ? prosodyDefaultProps : audioDefaultProps).map((prop) => `${prop}=""`).join(' ');
 };
 
 type StringArrayEditorProps = {

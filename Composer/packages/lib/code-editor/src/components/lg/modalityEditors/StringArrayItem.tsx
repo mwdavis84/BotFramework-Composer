@@ -204,6 +204,7 @@ export const StringArrayItem = (props: Props) => {
             lgOption={lgOption}
             lgTemplates={lgTemplates}
             memoryVariables={memoryVariables}
+            value={value}
             onChange={onLgChange}
           />
         )

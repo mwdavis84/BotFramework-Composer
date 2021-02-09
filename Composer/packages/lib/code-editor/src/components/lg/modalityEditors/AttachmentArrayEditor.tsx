@@ -17,8 +17,6 @@ import { jsLgToolbarMenuClassName } from '../constants';
 
 import { StringArrayItem } from './StringArrayItem';
 
-const noop = () => {};
-
 const styles: { button: IButtonStyles } = {
   button: {
     root: {
@@ -46,7 +44,7 @@ const AttachmentArrayEditor = React.memo(
     const [currentIndex, setCurrentIndex] = React.useState<number | null>(null);
 
     const handleChange = React.useCallback(
-      (templateId: string) => (_, body?: string) => {
+      (templateId: string) => (body?: string) => {
         onTemplateChange(templateId, body);
       },
       [items, onTemplateChange]
@@ -68,11 +66,14 @@ const AttachmentArrayEditor = React.memo(
       [items, onChange]
     );
 
-    const handleAddTemplateClick = React.useCallback((_, item?: IContextualMenuItem) => {}, [
-      items,
-      onChange,
-      onTemplateChange,
-    ]);
+    const handleAddTemplateClick = React.useCallback(
+      (_, item?: IContextualMenuItem) => {
+        const templateId = `HeroCard`;
+        onChange([...items, templateId]);
+        onTemplateChange(templateId, '[Test\n\ttext = 123\n]');
+      },
+      [items, onChange, onTemplateChange]
+    );
 
     const newButtonMenuItems = React.useMemo<IContextualMenuItem[]>(
       () => [
@@ -175,9 +176,15 @@ const AttachmentArrayEditor = React.memo(
       };
     }, [items, onChange]);
 
+    const templates = React.useMemo(() => {
+      return items.map((name) => {
+        return lgTemplates?.find((template) => template.name === name) || { name, body: '' };
+      }, []);
+    }, [items, lgTemplates]);
+
     return (
       <div ref={containerRef}>
-        {items.map((value, key) => (
+        {templates.map(({ name, body }, key) => (
           <StringArrayItem
             key={key}
             editorMode="editor"
@@ -185,19 +192,14 @@ const AttachmentArrayEditor = React.memo(
             lgTemplates={lgTemplates}
             memoryVariables={memoryVariables}
             mode={key === currentIndex ? 'edit' : 'view'}
-            value={value}
-            onChange={handleChange(value)}
+            value={body}
             onFocus={handleFocus(key)}
+            onLgChange={handleChange(name)}
             onRemove={handleRemove(key)}
           />
         ))}
         {currentIndex === null && (
-          <CommandButton
-            menuProps={addButtonMenuProps}
-            styles={styles.button}
-            onClick={noop}
-            onRenderMenuIcon={() => null}
-          >
+          <CommandButton menuProps={addButtonMenuProps} styles={styles.button} onRenderMenuIcon={() => null}>
             {formatMessage('Add new attachment')}
           </CommandButton>
         )}
