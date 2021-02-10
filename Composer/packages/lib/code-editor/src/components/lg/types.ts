@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@botframework-composer/types';
+import { LgTemplate } from '@bfc/shared';
 
 import { LGOption } from '../../utils';
 
@@ -54,3 +54,36 @@ export type CommonModalityEditorProps = {
   onTemplateChange: (templateId: string, body?: string) => void;
   onRemoveModality: () => void;
 };
+
+/**
+ * Structured response types.
+ */
+export const acceptedInputHintValues = ['expecting', 'ignoring', 'accepting'] as const;
+export const acceptedAttachmentLayout = ['carousel', 'list'] as const;
+
+export const structuredResponseKeys = [
+  'Text',
+  'Speak',
+  'Attachments',
+  'AttachmentLayout',
+  'InputHint',
+  'SuggestedActions',
+] as const;
+
+export type TextStructuredResponse = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
+export type SpeakStructuredResponse = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
+export type AttachmentsStructuredResponse = { kind: 'Attachments'; value: string[]; valueType: 'template' | 'direct' };
+export type AttachmentLayoutStructuredResponse = {
+  kind: 'AttachmentLayout';
+  value: typeof acceptedAttachmentLayout[number];
+};
+export type InputHintStructuredResponse = { kind: 'InputHint'; value: typeof acceptedInputHintValues[number] };
+export type SuggestedActionsStructuredResponse = { kind: 'SuggestedActions'; value: string[] };
+
+export type StructuredResponse =
+  | TextStructuredResponse
+  | SpeakStructuredResponse
+  | SuggestedActionsStructuredResponse
+  | InputHintStructuredResponse
+  | AttachmentLayoutStructuredResponse
+  | AttachmentsStructuredResponse;

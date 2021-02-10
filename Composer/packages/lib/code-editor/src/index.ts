@@ -13,4 +13,4 @@ export * from './LgEditor';
 export * from './LuEditor';
 export * from './QnAEditor';
 export * from './constants';
-export * from './utils/structuredResponse';
+export * from './utils/lgValidate';

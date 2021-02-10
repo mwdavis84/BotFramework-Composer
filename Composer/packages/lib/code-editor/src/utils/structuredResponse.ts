@@ -1,38 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@botframework-composer/types';
+import { LgTemplate } from '@bfc/shared';
 
-const activityTemplateType = 'Activity';
-const emptyTemplateBodyRegex = /^$|-(\s)?/;
+import { emptyTemplateBodyRegex, activityTemplateType } from '../components/lg/constants';
+import {
+  acceptedAttachmentLayout,
+  acceptedInputHintValues,
+  AttachmentLayoutStructuredResponse,
+  AttachmentsStructuredResponse,
+  InputHintStructuredResponse,
+  SpeakStructuredResponse,
+  StructuredResponse,
+  structuredResponseKeys,
+  SuggestedActionsStructuredResponse,
+  TextStructuredResponse,
+} from '../components/lg/types';
+
 const subTemplateNameRegex = /\${(.*)}/;
-
-const acceptedInputHintValues = ['expecting', 'ignoring', 'accepting'] as const;
-const acceptedAttachmentLayout = ['carousel', 'list'] as const;
-
-const structuredResponseKeys = [
-  'Text',
-  'Speak',
-  'Attachments',
-  'AttachmentLayout',
-  'InputHint',
-  'SuggestedActions',
-] as const;
-
-type TextStructuredResponse = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
-type SpeakStructuredResponse = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
-type AttachmentsStructuredResponse = { kind: 'Attachments'; value: string[]; valueType: 'template' | 'direct' };
-type AttachmentLayoutStructuredResponse = { kind: 'AttachmentLayout'; value: typeof acceptedAttachmentLayout[number] };
-type InputHintStructuredResponse = { kind: 'InputHint'; value: typeof acceptedInputHintValues[number] };
-type SuggestedActionsStructuredResponse = { kind: 'SuggestedActions'; value: string[] };
-
-type StructuredResponse =
-  | TextStructuredResponse
-  | SpeakStructuredResponse
-  | SuggestedActionsStructuredResponse
-  | InputHintStructuredResponse
-  | AttachmentLayoutStructuredResponse
-  | AttachmentsStructuredResponse;
 
 const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'Attachments') => {
   if (typeof value === 'string') {
@@ -40,7 +25,9 @@ const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'A
     const valueType = subTemplateNameRegex.test(valueAsString) ? 'template' : 'direct';
 
     return { kind, value: [valueAsString], valueType };
-  } else if (Array.isArray(value)) {
+  }
+
+  if (Array.isArray(value) && kind === 'Attachments') {
     const valueAsArray = value as string[];
 
     return { kind, value: valueAsArray, valueType: 'direct' };
@@ -97,7 +84,12 @@ const getStructuredResponseByKind = (
  * Converts template properties to structured response.
  * @param lgTemplate LgTemplate to convert.
  */
-export const getStructuredResponseFromTemplate = (lgTemplate: LgTemplate) => {
+export const getStructuredResponseFromTemplate = (
+  lgTemplate?: LgTemplate
+): Partial<Record<StructuredResponse['kind'], unknown>> | undefined => {
+  if (!lgTemplate) {
+    return undefined;
+  }
   if (!lgTemplate.body || emptyTemplateBodyRegex.test(lgTemplate.body)) {
     return undefined;
   }
@@ -113,21 +105,15 @@ export const getStructuredResponseFromTemplate = (lgTemplate: LgTemplate) => {
     }
 
     return response;
-  }, {});
+  }, {} as Partial<Record<StructuredResponse['kind'], unknown>>);
 
   return Object.keys(structuredResponse).length ? structuredResponse : undefined;
 };
 
-export const validateStructuredResponse = (lgTemplate: LgTemplate) => {
-  // If empty template return true
-  if (!lgTemplate.body || emptyTemplateBodyRegex.test(lgTemplate.body)) {
-    return true;
-  }
-
-  // If not of type Activity, return false
-  if (lgTemplate.properties?.$type !== activityTemplateType) {
-    return false;
-  }
-
-  return !!getStructuredResponseFromTemplate(lgTemplate);
-};
+/**
+ * Extracts template name from an LG expression
+ * ${templateName(params)} => templateName(params)
+ * @param expression Expression to extract template name from.
+ */
+export const extractTemplateNameFromExpression = (expression: string): string | undefined =>
+  expression.match(subTemplateNameRegex)?.[1]?.trim();
