@@ -3,10 +3,10 @@
 
 /** @jsx jsx */
 import { FieldLabel, useFormData } from '@bfc/adaptive-form';
-import { LgEditor, LgEditorMode } from '@bfc/code-editor';
+import { LgEditor, LgEditorMode, validateStructuredResponse } from '@bfc/code-editor';
 import { FieldProps, useShellApi } from '@bfc/extension-client';
 import { filterTemplateDiagnostics } from '@bfc/indexers';
-import { CodeEditorSettings, LgMetaData, LgTemplateRef, LgType, LgTemplate } from '@bfc/shared';
+import { CodeEditorSettings, LgMetaData, LgTemplateRef, LgType } from '@bfc/shared';
 import { OpenConfirmModal } from '@bfc/ui-shared';
 import { jsx } from '@emotion/core';
 import formatMessage from 'format-message';
@@ -38,17 +38,6 @@ const confirmDialogContentTokens = {
 };
 
 const lspServerPath = '/lg-language-server';
-
-const activityTemplateType = 'Activity';
-const emptyTemplateBodyRegex = /^$|-(\s)?/;
-
-const shouldAllowResponseEditor = (template: LgTemplate) => {
-  return (
-    !template.body ||
-    emptyTemplateBodyRegex.test(template.body) ||
-    template.properties?.['$type'] === activityTemplateType
-  );
-};
 
 const tryGetLgMetaDataType = (lgText: string): string | null => {
   const lgRef = LgTemplateRef.parse(lgText);
@@ -131,7 +120,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     body: getInitialTemplate(name, value),
   };
 
-  const allowResponseEditor = React.useMemo(() => shouldAllowResponseEditor(template), [template]);
+  const allowResponseEditor = React.useMemo(() => validateStructuredResponse(template), [template]);
   const [editorMode, setEditorMode] = React.useState<LgEditorMode>(
     allowResponseEditor ? 'responseEditor' : 'codeEditor'
   );
@@ -142,6 +131,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     projectId,
     fileId: lgFileId,
     templateId: lgName,
+    template,
   };
 
   const onChange = (body: string) => {
