@@ -13,7 +13,8 @@ import {
 import React from 'react';
 
 import { LGOption } from '../../../utils';
-import { jsLgToolbarMenuClassName } from '../constants';
+import { cardTemplates, jsLgToolbarMenuClassName } from '../constants';
+import { getUniqueTemplateName } from '../../../utils/lgUtils';
 
 import { StringArrayItem } from './StringArrayItem';
 
@@ -68,11 +69,14 @@ const AttachmentArrayEditor = React.memo(
 
     const handleAddTemplateClick = React.useCallback(
       (_, item?: IContextualMenuItem) => {
-        const templateId = `HeroCard`;
-        onChange([...items, templateId]);
-        onTemplateChange(templateId, '[Test\n\ttext = 123\n]');
+        if (item) {
+          const templateId = getUniqueTemplateName(`${lgOption?.templateId}_attachment`, lgTemplates);
+
+          onChange([...items, templateId]);
+          onTemplateChange(templateId, item?.data.template);
+        }
       },
-      [items, onChange, onTemplateChange]
+      [items, lgOption, lgTemplates, onChange, onTemplateChange]
     );
 
     const newButtonMenuItems = React.useMemo<IContextualMenuItem[]>(
@@ -93,31 +97,54 @@ const AttachmentArrayEditor = React.memo(
                 text: formatMessage('Hero card'),
                 onClick: handleAddTemplateClick,
                 itemProps: addButtonMenuItemProps,
+                data: {
+                  template: cardTemplates.hero,
+                },
               },
               {
                 key: 'thumbnail',
                 text: formatMessage('Thumbnail card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: handleAddTemplateClick,
+                data: {
+                  template: cardTemplates.thumbnail,
+                },
               },
               {
                 key: 'signin',
                 text: formatMessage('Sign-in card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: handleAddTemplateClick,
+                data: {
+                  template: cardTemplates.signin,
+                },
               },
               {
                 key: 'animation',
                 text: formatMessage('Animation card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: handleAddTemplateClick,
+                data: {
+                  template: cardTemplates.animation,
+                },
               },
               {
                 key: 'video',
                 text: formatMessage('Video card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: handleAddTemplateClick,
+                data: {
+                  template: cardTemplates.video,
+                },
               },
               {
                 key: 'audio',
                 text: formatMessage('Audio card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: handleAddTemplateClick,
+                data: {
+                  template: cardTemplates.audio,
+                },
               },
               {
                 key: 'adaptive',

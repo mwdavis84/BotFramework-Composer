@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { generateUniqueId, LgTemplate } from '@bfc/shared';
 import uniq from 'lodash/uniq';
 
 import { LgLanguageContext, PropertyItem } from '../components/lg/types';
@@ -229,4 +230,9 @@ export const getAllNodes = <T extends { id: string; children?: T[] }>(
   countHelper(root);
 
   return { nodes, levels, parents, paths, descendantCount };
+};
+
+export const getUniqueTemplateName = (templateId: string, templates?: readonly LgTemplate[]) => {
+  const id = `${templateId}_${generateUniqueId()}`;
+  return !templates || templates.find(({ name }) => name === id) ? getUniqueTemplateName(templateId, templates) : id;
 };
