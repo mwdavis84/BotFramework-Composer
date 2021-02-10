@@ -24,20 +24,8 @@ type MonacoEdit = {
   forceMoveMarkers: boolean;
 };
 
-/**
- * This function returns the context of the current cursor position in an LG document.
- * @param editor LG editor instance.
- */
-const getCursorContext = (editor: any) => {
+export const getCursorContextWithinLine = (lineContent: string) => {
   const state: LgLanguageContext[] = [];
-  const position: MonacoPosition = editor.getPosition() ?? { lineNumber: 1, column: 1 };
-  const range: MonacoRange = {
-    startLineNumber: position.lineNumber,
-    startColumn: 1,
-    endLineNumber: position.lineNumber,
-    endColumn: position.column,
-  };
-  let lineContent = editor.getModel()?.getValueInRange(range) ?? '';
 
   if (!lineContent.startsWith('-')) {
     lineContent = `- ${lineContent}`;
@@ -92,6 +80,23 @@ const getCursorContext = (editor: any) => {
   }
 
   return state.pop();
+};
+
+/**
+ * This function returns the context of the current cursor position in an LG document.
+ * @param editor LG editor instance.
+ */
+const getCursorContext = (editor: any) => {
+  const position: MonacoPosition = editor.getPosition() ?? { lineNumber: 1, column: 1 };
+  const range: MonacoRange = {
+    startLineNumber: position.lineNumber,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: position.column,
+  };
+  const lineContent = editor.getModel()?.getValueInRange(range) ?? '';
+
+  return getCursorContextWithinLine(lineContent);
 };
 
 /**

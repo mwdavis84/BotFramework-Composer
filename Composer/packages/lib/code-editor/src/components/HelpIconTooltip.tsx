@@ -5,7 +5,7 @@ import { FluentTheme, NeutralColors } from '@uifabric/fluent-theme';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import * as React from 'react';
 
-import { withTooltip } from '../utils/withTooltip';
+import { withTooltip, WithTooltipProps } from '../utils/withTooltip';
 
 const iconStyles = {
   root: {
@@ -17,8 +17,16 @@ const iconStyles = {
 };
 
 export const HelpIconTooltip = React.memo(
-  ({ tooltipId, helpMessage }: { tooltipId: string; helpMessage: string | JSX.Element | JSX.Element[] }) => {
-    const TooltipIcon = withTooltip({ content: helpMessage, id: tooltipId }, Icon);
+  ({
+    tooltipId,
+    helpMessage,
+    tooltipProps,
+  }: {
+    tooltipId: string;
+    helpMessage: string | JSX.Element | JSX.Element[];
+    tooltipProps?: WithTooltipProps;
+  }) => {
+    const TooltipIcon = withTooltip({ ...tooltipProps, content: helpMessage, id: tooltipId }, Icon);
     return <TooltipIcon iconName={'Unknown'} styles={iconStyles} />;
   }
 );

@@ -13,11 +13,16 @@ import * as React from 'react';
 
 import { ItemWithTooltip } from '../ItemWithTooltip';
 
+import { jsLgToolbarMenuClassName } from './constants';
 import { LgEditorToolbar, LgEditorToolbarProps } from './LgEditorToolbar';
 
 const menuItemStyles = {
   fontSize: FluentTheme.fonts.small.fontSize,
 };
+
+const ssmlHeaderHelpUrl =
+  'https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/speech-synthesis-markup';
+const ssmlHeaderTooltipProps = { calloutProps: { layerProps: { className: jsLgToolbarMenuClassName } } };
 
 export type SSMLTagType = 'break' | 'prosody' | 'audio';
 
@@ -33,9 +38,10 @@ export const LgSpeakModalityToolbar = React.memo((props: Props) => {
       <ItemWithTooltip
         itemText={defaultRenders.renderItemName(itemProps)}
         tooltipId="ssml-menu-header"
+        tooltipProps={ssmlHeaderTooltipProps}
         tooltipText={formatMessage.rich('To learn more about SSML Tags, <a>go to this document</a>.', {
           a: ({ children }) => (
-            <Link key="ssml-menu-header-link" href="#" target="_blank">
+            <Link key="ssml-menu-header-link" href={ssmlHeaderHelpUrl} target="_blank">
               {children}
             </Link>
           ),

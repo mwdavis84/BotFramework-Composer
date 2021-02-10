@@ -113,7 +113,7 @@ export const getStructuredResponseFromTemplate = (
 
 /**
  * Extracts template name from an LG expression
- * ${templateName(params)} => templateName(params)
+ * ${templateName(params)} => templateName
  * @param expression Expression to extract template name from.
  */
 export const extractTemplateNameFromExpression = (expression: string): string | undefined =>

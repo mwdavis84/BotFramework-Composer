@@ -9,6 +9,7 @@ import { ILinkStyles, Link } from 'office-ui-fabric-react/lib/Link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LGOption } from '../../../utils';
+import { getCursorContextWithinLine } from '../../../utils/lgUtils';
 import { jsLgToolbarMenuClassName } from '../constants';
 import { LgEditorToolbar } from '../LgEditorToolbar';
 import { LgSpeakModalityToolbar, SSMLTagType } from '../LgSpeakModalityToolbar';
@@ -30,15 +31,23 @@ const styles: { link: ILinkStyles } = {
 };
 
 const prosodyDefaultProps = ['pitch', 'rate', 'volume'];
-
+const breakDefaultProps = ['time', 'strength'];
 const audioDefaultProps = ['src'];
 
 const getSSMLProps = (tag: 'prosody' | 'audio' | 'break'): string => {
-  if (tag === 'break') {
-    return '';
+  let defaultProps: string[] = [];
+  switch (tag) {
+    case 'prosody':
+      defaultProps = prosodyDefaultProps;
+      break;
+    case 'audio':
+      defaultProps = audioDefaultProps;
+      break;
+    case 'break':
+      defaultProps = breakDefaultProps;
   }
 
-  return (tag === 'prosody' ? prosodyDefaultProps : audioDefaultProps).map((prop) => `${prop}=""`).join(' ');
+  return defaultProps.map((prop) => `${prop}=""`).join(' ');
 };
 
 type StringArrayEditorProps = {
@@ -129,7 +138,7 @@ const StringArrayEditor = React.memo(
     }, [items, onChange]);
 
     const selectToolbarMenuItem = React.useCallback(
-      (insertText: string) => {
+      (text: string) => {
         if (typeof currentIndex === 'number' && currentIndex < items.length) {
           const updatedItems = [...items];
 
@@ -140,6 +149,8 @@ const StringArrayEditor = React.memo(
               typeof calloutTargetElement?.selectionEnd === 'number'
                 ? calloutTargetElement.selectionEnd
                 : calloutTargetElement.selectionStart;
+            const context = getCursorContextWithinLine(item.substring(0, start));
+            const insertText = context === 'expression' ? text : `\${${text}}`;
             updatedItems[currentIndex] = [item.slice(0, start), insertText, item.slice(end)].join('');
             onChange(updatedItems);
 
