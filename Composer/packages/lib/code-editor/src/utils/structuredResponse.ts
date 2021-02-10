@@ -18,6 +18,7 @@ import {
 } from '../components/lg/types';
 
 const subTemplateNameRegex = /\${(.*)}/;
+const templateNameExtractRegex = /\${(.*)(\(.*\))\s*}/;
 
 const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'Attachments') => {
   if (typeof value === 'string') {
@@ -116,4 +117,4 @@ export const getStructuredResponseFromTemplate = (
  * @param expression Expression to extract template name from.
  */
 export const extractTemplateNameFromExpression = (expression: string): string | undefined =>
-  expression.match(subTemplateNameRegex)?.[1]?.trim();
+  expression.match(templateNameExtractRegex)?.[1]?.trim();
