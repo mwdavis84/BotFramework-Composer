@@ -7,15 +7,14 @@ import { emptyTemplateBodyRegex, activityTemplateType } from '../components/lg/c
 import {
   acceptedAttachmentLayout,
   acceptedInputHintValues,
-  AttachmentLayoutStructuredResponse,
-  AttachmentsStructuredResponse,
-  InputHintStructuredResponse,
-  SpeakStructuredResponse,
-  StructuredResponse,
-  structuredResponseKeys,
-  SuggestedActionsStructuredResponse,
-  TemplateResponse,
-  TextStructuredResponse,
+  AttachmentLayoutStructuredResponseItem,
+  AttachmentsStructuredResponseItem,
+  InputHintStructuredResponseItem,
+  SpeakStructuredResponseItem,
+  StructuredResponseItem,
+  SuggestedActionsStructuredResponseItem,
+  PartialStructuredResponse,
+  TextStructuredResponseItem,
 } from '../components/lg/types';
 
 const subTemplateNameRegex = /\${(.*)}/;
@@ -26,11 +25,11 @@ const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'A
     const valueAsString = value as string;
     const valueType = subTemplateNameRegex.test(valueAsString) ? 'template' : 'direct';
 
-    return { kind, value: [valueAsString], valueType };
+    return { kind, value: [valueAsString.trim()], valueType };
   }
 
   if (Array.isArray(value) && kind === 'Attachments') {
-    const valueAsArray = value as string[];
+    const valueAsArray = (value as string[]).map((v) => v.trim());
 
     return { kind, value: valueAsArray, valueType: 'direct' };
   }
@@ -40,8 +39,8 @@ const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'A
 
 const getStructuredResponseByKind = (
   template: LgTemplate,
-  kind: StructuredResponse['kind']
-): StructuredResponse | undefined => {
+  kind: StructuredResponseItem['kind']
+): StructuredResponseItem | undefined => {
   const value = template.properties?.[kind];
   if (value === undefined) {
     return undefined;
@@ -49,15 +48,15 @@ const getStructuredResponseByKind = (
 
   switch (kind) {
     case 'Text':
-      return getStructuredResponseHelper(value, 'Text') as TextStructuredResponse;
+      return getStructuredResponseHelper(value, 'Text') as TextStructuredResponseItem;
     case 'Speak':
-      return getStructuredResponseHelper(value, 'Speak') as SpeakStructuredResponse;
+      return getStructuredResponseHelper(value, 'Speak') as SpeakStructuredResponseItem;
     case 'Attachments':
-      return getStructuredResponseHelper(value, 'Attachments') as AttachmentsStructuredResponse;
+      return getStructuredResponseHelper(value, 'Attachments') as AttachmentsStructuredResponseItem;
     case 'SuggestedActions': {
       if (Array.isArray(value)) {
-        const responseValue = value as string[];
-        return { kind: 'SuggestedActions', value: responseValue } as SuggestedActionsStructuredResponse;
+        const responseValue = (value as string[]).map((v) => v.trim());
+        return { kind: 'SuggestedActions', value: responseValue } as SuggestedActionsStructuredResponseItem;
       }
       break;
     }
@@ -66,7 +65,7 @@ const getStructuredResponseByKind = (
         return {
           kind: 'AttachmentLayout',
           value: value as typeof acceptedAttachmentLayout[number],
-        } as AttachmentLayoutStructuredResponse;
+        } as AttachmentLayoutStructuredResponseItem;
       }
       break;
     case 'InputHint':
@@ -74,7 +73,7 @@ const getStructuredResponseByKind = (
         return {
           kind: 'InputHint',
           value: value as typeof acceptedInputHintValues[number],
-        } as InputHintStructuredResponse;
+        } as InputHintStructuredResponseItem;
       }
       break;
   }
@@ -86,7 +85,7 @@ const getStructuredResponseByKind = (
  * Converts template properties to structured response.
  * @param lgTemplate LgTemplate to convert.
  */
-export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): TemplateResponse | undefined => {
+export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): PartialStructuredResponse | undefined => {
   if (!lgTemplate) {
     return undefined;
   }
@@ -98,14 +97,18 @@ export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): Temp
     return undefined;
   }
 
-  const structuredResponse: TemplateResponse = structuredResponseKeys.reduce((response, key) => {
-    const value = getStructuredResponseByKind(lgTemplate, key);
+  if (!Object.keys(lgTemplate.properties).length) {
+    return undefined;
+  }
+
+  const structuredResponse: PartialStructuredResponse = Object.keys(lgTemplate.properties).reduce((response, kind) => {
+    const value = getStructuredResponseByKind(lgTemplate, kind as StructuredResponseItem['kind']);
     if (value !== undefined) {
-      response[key] = value;
+      response[kind] = value;
     }
 
     return response;
-  }, {} as TemplateResponse);
+  }, {} as PartialStructuredResponse);
 
   return Object.keys(structuredResponse).length ? structuredResponse : undefined;
 };
@@ -117,3 +120,51 @@ export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): Temp
  */
 export const extractTemplateNameFromExpression = (expression: string): string | undefined =>
   expression.match(templateNameExtractRegex)?.[1]?.trim();
+
+export const structuredResponseToString = (structuredResponse: PartialStructuredResponse): string => {
+  const keys = Object.keys(structuredResponse);
+
+  if (!keys.length) {
+    return '';
+  }
+
+  const getValue = (kind: StructuredResponseItem['kind']): string | undefined => {
+    switch (kind) {
+      case 'Speak': {
+        const item = structuredResponse.Speak as SpeakStructuredResponseItem;
+        return item.value[0];
+      }
+      case 'Text': {
+        const item = structuredResponse.Text as TextStructuredResponseItem;
+        return item.value[0];
+      }
+      case 'InputHint': {
+        const item = structuredResponse.InputHint as InputHintStructuredResponseItem;
+        return item?.value;
+      }
+      case 'AttachmentLayout': {
+        const item = structuredResponse.InputHint as AttachmentLayoutStructuredResponseItem;
+        return item?.value;
+      }
+      case 'SuggestedActions': {
+        const item = structuredResponse.SuggestedActions as SuggestedActionsStructuredResponseItem;
+        return item.value.join(' | ');
+      }
+      case 'Attachments': {
+        const item = structuredResponse.Attachments as AttachmentsStructuredResponseItem;
+        return item.value.join(' | ');
+      }
+    }
+  };
+
+  const body = keys.reduce((text, kind) => {
+    const value = getValue(kind as StructuredResponseItem['kind']);
+
+    if (value) {
+      text += `\t${kind} = ${value}\n`;
+    }
+    return text;
+  }, '');
+
+  return `[${activityTemplateType}\n${body}]`;
+};

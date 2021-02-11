@@ -105,7 +105,9 @@ const StringArrayEditor = React.memo(
           setCalloutTargetElement(null);
           setCurrentIndex(null);
           // Remove empty variations
-          onChange(items.filter(Boolean));
+          if (items.some((item) => !item)) {
+            onChange(items.filter(Boolean));
+          }
         }
       };
 
@@ -124,7 +126,9 @@ const StringArrayEditor = React.memo(
           setCalloutTargetElement(null);
           setCurrentIndex(null);
           // Remove empty variations
-          onChange(items.filter(Boolean));
+          if (items.some((item) => !item)) {
+            onChange(items.filter(Boolean));
+          }
         }
       };
 

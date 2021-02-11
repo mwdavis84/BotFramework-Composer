@@ -39,10 +39,10 @@ export type LgLanguageContext =
   | 'templateName'
   | 'root';
 
-export type TemplateResponse = Partial<Record<StructuredResponse['kind'], StructuredResponse>>;
+export type PartialStructuredResponse = Partial<Record<StructuredResponseItem['kind'], StructuredResponseItem>>;
 
 export type CommonModalityEditorProps = {
-  response?: TemplateResponse;
+  response?: PartialStructuredResponse;
   removeModalityDisabled: boolean;
   lgOption?: LGOption;
   lgTemplates?: readonly LgTemplate[];
@@ -50,8 +50,8 @@ export type CommonModalityEditorProps = {
   onAttachmentLayoutChange?: (layout: string) => void;
   onInputHintChange?: (inputHint: string) => void;
   onTemplateChange: (templateId: string, body?: string) => void;
-  onRemoveModality: () => void;
-  onUpdateResponseTemplate: (response: TemplateResponse) => void;
+  onRemoveModality: (modality: ModalityType) => void;
+  onUpdateResponseTemplate: (response: PartialStructuredResponse) => void;
 };
 
 /**
@@ -65,20 +65,24 @@ export const structuredResponseKeys = [...modalityType, 'AttachmentLayout', 'Inp
 
 export type ModalityType = typeof modalityType[number];
 
-export type TextStructuredResponse = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
-export type SpeakStructuredResponse = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
-export type AttachmentsStructuredResponse = { kind: 'Attachments'; value: string[]; valueType: 'template' | 'direct' };
-export type AttachmentLayoutStructuredResponse = {
+export type TextStructuredResponseItem = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
+export type SpeakStructuredResponseItem = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
+export type AttachmentsStructuredResponseItem = {
+  kind: 'Attachments';
+  value: string[];
+  valueType: 'template' | 'direct';
+};
+export type AttachmentLayoutStructuredResponseItem = {
   kind: 'AttachmentLayout';
   value: typeof acceptedAttachmentLayout[number];
 };
-export type InputHintStructuredResponse = { kind: 'InputHint'; value: typeof acceptedInputHintValues[number] };
-export type SuggestedActionsStructuredResponse = { kind: 'SuggestedActions'; value: string[] };
+export type InputHintStructuredResponseItem = { kind: 'InputHint'; value: typeof acceptedInputHintValues[number] };
+export type SuggestedActionsStructuredResponseItem = { kind: 'SuggestedActions'; value: string[] };
 
-export type StructuredResponse =
-  | TextStructuredResponse
-  | SpeakStructuredResponse
-  | SuggestedActionsStructuredResponse
-  | InputHintStructuredResponse
-  | AttachmentLayoutStructuredResponse
-  | AttachmentsStructuredResponse;
+export type StructuredResponseItem =
+  | TextStructuredResponseItem
+  | SpeakStructuredResponseItem
+  | SuggestedActionsStructuredResponseItem
+  | InputHintStructuredResponseItem
+  | AttachmentLayoutStructuredResponseItem
+  | AttachmentsStructuredResponseItem;

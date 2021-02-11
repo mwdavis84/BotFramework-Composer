@@ -4,12 +4,12 @@
 import formatMessage from 'format-message';
 import React from 'react';
 
-import { CommonModalityEditorProps, SuggestedActionsStructuredResponse } from '../types';
+import { CommonModalityEditorProps, SuggestedActionsStructuredResponseItem } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
-type Props = CommonModalityEditorProps & { response: SuggestedActionsStructuredResponse };
+type Props = CommonModalityEditorProps & { response: SuggestedActionsStructuredResponseItem };
 
 const SuggestedActionsModalityEditor = React.memo(
   ({

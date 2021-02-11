@@ -6,18 +6,18 @@ import formatMessage from 'format-message';
 import React, { useCallback, useState } from 'react';
 
 import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
-import { CommonModalityEditorProps, TextStructuredResponse } from '../types';
+import { CommonModalityEditorProps, TextStructuredResponseItem } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
-const getInitialTemplateId = (response: TextStructuredResponse): string | undefined => {
+const getInitialTemplateId = (response: TextStructuredResponseItem): string | undefined => {
   if (response?.value) {
     return extractTemplateNameFromExpression(Array.isArray(response.value) ? response.value[0] : response.value);
   }
 };
 
-const getInitialItems = (response: TextStructuredResponse, lgTemplates?: readonly LgTemplate[]): string[] => {
+const getInitialItems = (response: TextStructuredResponseItem, lgTemplates?: readonly LgTemplate[]): string[] => {
   const templateId = getInitialTemplateId(response);
   const template = lgTemplates?.find(({ name }) => name === templateId);
   return response?.value && template?.body
@@ -25,7 +25,7 @@ const getInitialItems = (response: TextStructuredResponse, lgTemplates?: readonl
     : response?.value || [];
 };
 
-type Props = CommonModalityEditorProps & { response: TextStructuredResponse };
+type Props = CommonModalityEditorProps & { response: TextStructuredResponseItem };
 
 const TextModalityEditor = React.memo(
   ({
@@ -49,8 +49,10 @@ const TextModalityEditor = React.memo(
         } else {
           const id = templateId || `${lgOption?.templateId}_text`;
           setTemplateId(id);
-          onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
-          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [`\${${id}}`], valueType: 'template' } });
+          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [`\${${id}()}`], valueType: 'template' } });
+          ((templateId: string) => {
+            setTimeout(() => onTemplateChange(templateId, newItems.map((item) => `- ${item}`).join('\n')), 300);
+          })(id);
         }
       },
       [lgOption, setItems, templateId, onTemplateChange, onUpdateResponseTemplate]

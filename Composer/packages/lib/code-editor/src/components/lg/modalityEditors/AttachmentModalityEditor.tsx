@@ -5,13 +5,13 @@ import formatMessage from 'format-message';
 import React from 'react';
 import { IDropdownOption, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 
-import { AttachmentsStructuredResponse, CommonModalityEditorProps } from '../types';
+import { AttachmentsStructuredResponseItem, CommonModalityEditorProps } from '../types';
 import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { AttachmentArrayEditor } from './AttachmentArrayEditor';
 
-type Props = CommonModalityEditorProps & { response: AttachmentsStructuredResponse };
+type Props = CommonModalityEditorProps & { response: AttachmentsStructuredResponseItem };
 
 const AttachmentModalityEditor = React.memo(
   ({
@@ -55,14 +55,11 @@ const AttachmentModalityEditor = React.memo(
       []
     );
 
-    const handleAttachmentStyleChange = React.useCallback(
-      (_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-        if (option) {
-          onAttachmentLayoutChange?.(option.key as string);
-        }
-      },
-      []
-    );
+    const attachmentLayoutChange = React.useCallback((_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+      if (option) {
+        onAttachmentLayoutChange?.(option.key as string);
+      }
+    }, []);
 
     return (
       <ModalityEditorContainer
@@ -74,7 +71,7 @@ const AttachmentModalityEditor = React.memo(
         modalityTitle={formatMessage('Attachments')}
         modalityType="Attachments"
         removeModalityOptionText={formatMessage('Remove all attachments')}
-        onDropdownChange={handleAttachmentStyleChange}
+        onDropdownChange={attachmentLayoutChange}
         onRemoveModality={onRemoveModality}
       >
         <AttachmentArrayEditor

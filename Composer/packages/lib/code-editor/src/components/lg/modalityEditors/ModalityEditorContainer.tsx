@@ -66,7 +66,7 @@ type Props = {
   modalityTitle: string;
   modalityType: ModalityType;
   removeModalityOptionText: string;
-  onRemoveModality: () => void;
+  onRemoveModality: (modality: ModalityType) => void;
   onDropdownChange?: (_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => void;
 };
 
@@ -107,13 +107,13 @@ const ModalityEditorContainer: React.FC<Props> = ({
               }
             );
             if (confirm) {
-              onRemoveModality();
+              onRemoveModality(modalityType);
             }
           })();
         },
       },
     ],
-    [menuItems, disableRemoveModality, removeModalityOptionText, onRemoveModality]
+    [modalityType, menuItems, disableRemoveModality, removeModalityOptionText, onRemoveModality]
   );
 
   const renderTitle = React.useCallback(

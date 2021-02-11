@@ -71,7 +71,6 @@ const AttachmentArrayEditor = React.memo(
       (_, item?: IContextualMenuItem) => {
         if (item) {
           const templateId = getUniqueTemplateName(`${lgOption?.templateId}_attachment`, lgTemplates);
-
           onChange([...items, templateId]);
           onTemplateChange(templateId, item?.data.template);
         }
@@ -172,7 +171,9 @@ const AttachmentArrayEditor = React.memo(
         if (e.key === 'Escape') {
           setCurrentIndex(null);
           // Remove empty variations
-          onChange(items.filter(Boolean));
+          if (items.some((item) => !item)) {
+            onChange(items.filter(Boolean));
+          }
         }
       };
 
@@ -190,7 +191,9 @@ const AttachmentArrayEditor = React.memo(
         ) {
           setCurrentIndex(null);
           // Remove empty variations
-          onChange(items.filter(Boolean));
+          if (items.some((item) => !item)) {
+            onChange(items.filter(Boolean));
+          }
         }
       };
 

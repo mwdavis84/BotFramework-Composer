@@ -20,18 +20,19 @@ import mergeWith from 'lodash/mergeWith';
 
 import { LGOption } from '../../utils';
 import { ItemWithTooltip } from '../ItemWithTooltip';
+import { structuredResponseToString } from '../../utils/structuredResponse';
 
 import { AttachmentModalityEditor } from './modalityEditors/AttachmentModalityEditor';
 import { SpeechModalityEditor } from './modalityEditors/SpeechModalityEditor';
 import { SuggestedActionsModalityEditor } from './modalityEditors/SuggestedActionsModalityEditor';
 import { TextModalityEditor } from './modalityEditors/TextModalityEditor';
 import {
-  AttachmentsStructuredResponse,
-  SpeakStructuredResponse,
-  SuggestedActionsStructuredResponse,
-  TextStructuredResponse,
+  AttachmentsStructuredResponseItem,
+  SpeakStructuredResponseItem,
+  SuggestedActionsStructuredResponseItem,
+  TextStructuredResponseItem,
   ModalityType,
-  TemplateResponse,
+  PartialStructuredResponse,
 } from './types';
 
 const modalityDocumentUrl =
@@ -65,79 +66,72 @@ const styles: { tabs: Partial<IPivotStyles> } = {
   },
 };
 
-const renderModalityEditor = (
-  response: TemplateResponse | undefined,
-  modality: string,
-  onRemoveModality: (modality: ModalityType) => () => void,
-  onTemplateChange: (templateId: string, body?: string) => void,
-  onAttachmentLayoutChange: (layout: string) => void,
-  onInputHintChange: (inputHintString: string) => void,
-  onUpdateResponseTemplate: (response: TemplateResponse) => void,
-  disableRemoveModality: boolean,
-  lgOption?: LGOption,
-  lgTemplates?: readonly LgTemplate[],
-  memoryVariables?: readonly string[]
-) => {
+const renderModalityEditor = ({
+  modality,
+  removeModalityDisabled,
+  structuredResponse,
+  lgOption,
+  lgTemplates,
+  memoryVariables,
+  onRemoveModality,
+  onTemplateChange,
+  onAttachmentLayoutChange,
+  onInputHintChange,
+  onUpdateResponseTemplate,
+}: {
+  modality: string;
+  removeModalityDisabled: boolean;
+  structuredResponse?: PartialStructuredResponse;
+  lgOption?: LGOption;
+  lgTemplates?: readonly LgTemplate[];
+  memoryVariables?: readonly string[];
+  onRemoveModality: (modality: ModalityType) => void;
+  onTemplateChange: (templateId: string, body?: string) => void;
+  onAttachmentLayoutChange: (layout: string) => void;
+  onInputHintChange: (inputHintString: string) => void;
+  onUpdateResponseTemplate: (response: PartialStructuredResponse) => void;
+}) => {
+  const commonProps = {
+    lgOption,
+    lgTemplates,
+    memoryVariables,
+    removeModalityDisabled,
+    onTemplateChange,
+    onUpdateResponseTemplate,
+    onRemoveModality,
+  };
+
   switch (modality) {
     case 'Attachments':
       return (
         <AttachmentModalityEditor
-          lgOption={lgOption}
-          lgTemplates={lgTemplates}
-          memoryVariables={memoryVariables}
-          removeModalityDisabled={disableRemoveModality}
-          response={response?.Attachments as AttachmentsStructuredResponse}
+          {...commonProps}
+          response={structuredResponse?.Attachments as AttachmentsStructuredResponseItem}
           onAttachmentLayoutChange={onAttachmentLayoutChange}
-          onRemoveModality={onRemoveModality('Attachments')}
-          onTemplateChange={onTemplateChange}
-          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
     case 'Speak':
       return (
         <SpeechModalityEditor
-          lgOption={lgOption}
-          lgTemplates={lgTemplates}
-          memoryVariables={memoryVariables}
-          removeModalityDisabled={disableRemoveModality}
-          response={response?.Speak as SpeakStructuredResponse}
+          {...commonProps}
+          response={structuredResponse?.Speak as SpeakStructuredResponseItem}
           onInputHintChange={onInputHintChange}
-          onRemoveModality={onRemoveModality('Speak')}
-          onTemplateChange={onTemplateChange}
-          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
     case 'SuggestedActions':
       return (
         <SuggestedActionsModalityEditor
-          lgOption={lgOption}
-          lgTemplates={lgTemplates}
-          memoryVariables={memoryVariables}
-          removeModalityDisabled={disableRemoveModality}
-          response={response?.Speak as SuggestedActionsStructuredResponse}
-          onRemoveModality={onRemoveModality('SuggestedActions')}
-          onTemplateChange={onTemplateChange}
-          onUpdateResponseTemplate={onUpdateResponseTemplate}
+          {...commonProps}
+          response={structuredResponse?.SuggestedActions as SuggestedActionsStructuredResponseItem}
         />
       );
     case 'Text':
-      return (
-        <TextModalityEditor
-          lgOption={lgOption}
-          lgTemplates={lgTemplates}
-          memoryVariables={memoryVariables}
-          removeModalityDisabled={disableRemoveModality}
-          response={response?.Text as TextStructuredResponse}
-          onRemoveModality={onRemoveModality('Text')}
-          onTemplateChange={onTemplateChange}
-          onUpdateResponseTemplate={onUpdateResponseTemplate}
-        />
-      );
+      return <TextModalityEditor {...commonProps} response={structuredResponse?.Text as TextStructuredResponseItem} />;
   }
 };
 
-const getInitialModalities = (response?: TemplateResponse): ModalityType[] => {
-  const modalities = Object.keys(response || {}) as ModalityType[];
+const getInitialModalities = (structuredResponse?: PartialStructuredResponse): ModalityType[] => {
+  const modalities = Object.keys(structuredResponse || {}) as ModalityType[];
   return modalities.length ? modalities : ['Text'];
 };
 
@@ -145,18 +139,24 @@ type Props = {
   lgOption?: LGOption;
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
-  response?: TemplateResponse;
+  structuredResponse?: PartialStructuredResponse;
   onTemplateChange?: (templateId: string, body?: string) => void;
 };
 
-const ModalityPivot = React.memo((props: Props) => {
-  const { lgOption, lgTemplates, memoryVariables, response: initialResponse, onTemplateChange = () => {} } = props;
+export const ModalityPivot = React.memo((props: Props) => {
+  const {
+    lgOption,
+    lgTemplates,
+    memoryVariables,
+    structuredResponse: initialStructuredResponse,
+    onTemplateChange = () => {},
+  } = props;
 
-  const [response, setResponse] = React.useState(initialResponse);
+  const [structuredResponse, setStructuredResponse] = React.useState(initialStructuredResponse);
+  const [modalities, setModalities] = useState<ModalityType[]>(getInitialModalities(structuredResponse));
+  const [selectedModality, setSelectedModality] = useState<string>(modalities[0] as string);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [modalities, setModalities] = useState<ModalityType[]>(getInitialModalities(response));
-  const [selectedKey, setSelectedKey] = useState<string>(modalities[0] as string);
 
   const renderMenuItemContent = React.useCallback(
     (itemProps: IContextualMenuItemProps, defaultRenders: IContextualMenuItemRenderFunctions) =>
@@ -228,94 +228,93 @@ const ModalityPivot = React.memo((props: Props) => {
     modalities,
   ]);
 
-  const handleRemoveModality = useCallback(
-    (modality: ModalityType) => () => {
+  const onRemoveModality = useCallback(
+    (modality: ModalityType) => {
       // const templateId = modalityTemplates[modality].templateId;
       if (modalities.length > 1) {
         const updatedModalities = modalities.filter((item) => item !== modality);
         setModalities(updatedModalities);
-        setSelectedKey(updatedModalities[0] as string);
-        // onTemplateChange?.(templateId);
+        setSelectedModality(updatedModalities[0] as string);
+
+        if (lgOption?.templateId) {
+          const mergedResponse = mergeWith({}, structuredResponse);
+          delete mergedResponse[modality];
+
+          setStructuredResponse(mergedResponse);
+
+          const mappedResponse = structuredResponseToString(mergedResponse);
+          ((templateId: string) =>
+            setTimeout(() => {
+              onTemplateChange(templateId, mappedResponse);
+            }, 300))(lgOption.templateId);
+        }
       }
     },
-    [modalities, setModalities, setSelectedKey]
+    [modalities, setModalities, setSelectedModality, lgOption]
   );
 
-  const handleItemClick = useCallback(
+  const onModalityAddMenuItemClick = useCallback(
     (_, item?: IContextualMenuItem) => {
       if (item?.key) {
         setModalities((current) => [...current, item.key as ModalityType]);
-        setSelectedKey(item.key);
+        setSelectedModality(item.key);
       }
     },
     [setModalities]
   );
 
-  const handleLinkClicked = useCallback((item?: PivotItem) => {
+  const onPivotChange = useCallback((item?: PivotItem) => {
     if (item?.props.itemKey) {
-      setSelectedKey(item?.props.itemKey);
+      setSelectedModality(item?.props.itemKey);
     }
   }, []);
 
-  const handleUpdateResponseTemplate = React.useCallback(
-    (partialResponse: TemplateResponse) => {
+  const onUpdateResponseTemplate = React.useCallback(
+    (partialResponse: PartialStructuredResponse) => {
       if (lgOption?.templateId) {
-        const mergedResponse = mergeWith({}, response, partialResponse, (_, srcValue) => {
+        const mergedResponse = mergeWith({}, structuredResponse, partialResponse, (_, srcValue) => {
           if (Array.isArray(srcValue)) {
             return srcValue;
           }
         });
-        const mappedResponse = `[Activity
-  ${(Object.values(mergedResponse) as { kind: string; value: unknown }[])
-    .map(({ kind, value }) => {
-      if (!value || (Array.isArray(value) && !value.length)) {
-        return;
-      }
+        setStructuredResponse(mergedResponse);
 
-      if (Array.isArray(value) && ['Attachments', 'SuggestedActions'].includes(kind)) {
-        return `${kind} = ${value.join(' | ')}`;
-      }
-
-      if (typeof value === 'string') {
-        return `${kind} = ${value}`;
-      }
-    })
-    .filter(Boolean)
-    .join('\n\t')}
-]`;
-        setResponse(mergedResponse);
-        onTemplateChange(lgOption.templateId, mappedResponse);
+        const mappedResponse = structuredResponseToString(mergedResponse);
+        ((templateId: string) =>
+          setTimeout(() => {
+            onTemplateChange(templateId, mappedResponse);
+          }, 300))(lgOption.templateId);
       }
     },
-    [lgOption, response]
+    [lgOption, structuredResponse]
   );
 
-  const handleAttachmentLayoutChange = useCallback(
+  const onAttachmentLayoutChange = useCallback(
     (layout: string) => {
       // handleUpdateResponseTemplate({ AttachmentLayout: { kind: 'AttachmentLayout', value: [layout] }, });
     },
-    [handleUpdateResponseTemplate]
+    [onUpdateResponseTemplate]
   );
 
-  const handleInputHintChange = useCallback(
+  const onInputHintChange = useCallback(
     (inputHint: string) => {
       // handleUpdateResponseTemplate({ InputHint: { kind: 'InputHint', value: [inputHint], } });
     },
-    [handleUpdateResponseTemplate]
+    [onUpdateResponseTemplate]
   );
 
   const addMenuProps = React.useMemo<IContextualMenuProps>(
     () => ({
       items: menuItems,
-      onItemClick: handleItemClick,
+      onItemClick: onModalityAddMenuItemClick,
     }),
-    [menuItems, handleItemClick]
+    [menuItems, onModalityAddMenuItemClick]
   );
 
   return (
     <Stack>
       <Stack horizontal verticalAlign="center">
-        <Pivot headersOnly selectedKey={selectedKey} styles={styles.tabs} onLinkClick={handleLinkClicked}>
+        <Pivot headersOnly selectedKey={selectedModality} styles={styles.tabs} onLinkClick={onPivotChange}>
           {pivotItems.map(({ key, text }) => (
             <PivotItem key={key} headerText={text} itemKey={key} />
           ))}
@@ -326,22 +325,20 @@ const ModalityPivot = React.memo((props: Props) => {
       </Stack>
 
       <div ref={containerRef}>
-        {renderModalityEditor(
-          response,
-          selectedKey,
-          handleRemoveModality,
-          onTemplateChange,
-          handleAttachmentLayoutChange,
-          handleInputHintChange,
-          handleUpdateResponseTemplate,
-          modalities.length === 1,
+        {renderModalityEditor({
+          removeModalityDisabled: modalities.length === 1,
+          structuredResponse,
+          modality: selectedModality,
           lgOption,
           lgTemplates,
-          memoryVariables
-        )}
+          memoryVariables,
+          onRemoveModality,
+          onTemplateChange,
+          onAttachmentLayoutChange,
+          onInputHintChange,
+          onUpdateResponseTemplate,
+        })}
       </div>
     </Stack>
   );
 });
-
-export { ModalityPivot };

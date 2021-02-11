@@ -242,12 +242,17 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         />
         <TooltipHost
           content={
-            responseEditorLinkDisabled
+            responseEditorLinkDisabled && editorMode === 'codeEditor'
               ? formatMessage('In order to use the response editor, please fix your template errors first.')
               : undefined
           }
         >
-          <Link as="button" disabled={responseEditorLinkDisabled} styles={linkStyles} onClick={modeChange}>
+          <Link
+            as="button"
+            disabled={editorMode === 'codeEditor' && responseEditorLinkDisabled}
+            styles={linkStyles}
+            onClick={modeChange}
+          >
             {editorMode === 'codeEditor'
               ? formatMessage('switch to response editor')
               : formatMessage('switch to code editor')}

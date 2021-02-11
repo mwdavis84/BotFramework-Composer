@@ -5,12 +5,12 @@ import formatMessage from 'format-message';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 import React from 'react';
 
-import { CommonModalityEditorProps, SpeakStructuredResponse } from '../types';
+import { CommonModalityEditorProps, SpeakStructuredResponseItem } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
-type Props = CommonModalityEditorProps & { response: SpeakStructuredResponse };
+type Props = CommonModalityEditorProps & { response: SpeakStructuredResponseItem };
 
 const SpeechModalityEditor = React.memo(
   ({

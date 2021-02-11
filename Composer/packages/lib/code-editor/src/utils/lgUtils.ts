@@ -237,7 +237,9 @@ export const getAllNodes = <T extends { id: string; children?: T[] }>(
   return { nodes, levels, parents, paths, descendantCount };
 };
 
-export const getUniqueTemplateName = (templateId: string, templates?: readonly LgTemplate[]) => {
+export const getUniqueTemplateName = (templateId: string, templates?: readonly LgTemplate[]): string => {
   const id = `${templateId}_${generateUniqueId()}`;
-  return !templates || templates.find(({ name }) => name === id) ? getUniqueTemplateName(templateId, templates) : id;
+  return !templates || templates.find(({ name }) => name === id)
+    ? (getUniqueTemplateName(templateId, templates) as string)
+    : id;
 };

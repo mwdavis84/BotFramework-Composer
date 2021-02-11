@@ -10,14 +10,14 @@ import { ModalityPivot } from './ModalityPivot';
 
 export const LgResponseEditor = React.memo(
   ({ lgOption, lgTemplates, memoryVariables, onTemplateChange }: LgResponseEditorProps) => {
-    const response = getStructuredResponseFromTemplate(lgOption?.template);
+    const structuredResponse = getStructuredResponseFromTemplate(lgOption?.template);
 
     return (
       <ModalityPivot
         lgOption={lgOption}
         lgTemplates={lgTemplates}
         memoryVariables={memoryVariables}
-        response={response}
+        structuredResponse={structuredResponse}
         onTemplateChange={onTemplateChange}
       />
     );
