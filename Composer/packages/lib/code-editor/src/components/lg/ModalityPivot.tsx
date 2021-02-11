@@ -109,7 +109,7 @@ const renderModalityEditor = ({
       return (
         <AttachmentModalityEditor
           {...commonProps}
-          attachmentLayout={(structuredResponse?.AttachmentLayout as AttachmentLayoutStructuredResponseItem).value}
+          attachmentLayout={(structuredResponse?.AttachmentLayout as AttachmentLayoutStructuredResponseItem)?.value}
           response={structuredResponse?.Attachments as AttachmentsStructuredResponseItem}
           onAttachmentLayoutChange={onAttachmentLayoutChange}
         />
@@ -118,7 +118,7 @@ const renderModalityEditor = ({
       return (
         <SpeechModalityEditor
           {...commonProps}
-          inputHint={(structuredResponse?.InputHint as InputHintStructuredResponseItem).value}
+          inputHint={(structuredResponse?.InputHint as InputHintStructuredResponseItem)?.value}
           response={structuredResponse?.Speak as SpeechStructuredResponseItem}
           onInputHintChange={onInputHintChange}
         />

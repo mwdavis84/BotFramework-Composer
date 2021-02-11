@@ -143,7 +143,7 @@ export const structuredResponseToString = (structuredResponse: PartialStructured
         return item?.value;
       }
       case 'AttachmentLayout': {
-        const item = structuredResponse.InputHint as AttachmentLayoutStructuredResponseItem;
+        const item = structuredResponse.AttachmentLayout as AttachmentLayoutStructuredResponseItem;
         return item?.value;
       }
       case 'SuggestedActions': {

@@ -175,9 +175,8 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
   );
 
   const modeChange = React.useCallback(async () => {
-    let changeMode = true;
     if (editorMode === 'codeEditor' && !allowResponseEditor) {
-      changeMode = await OpenConfirmModal(
+      const confirm = await OpenConfirmModal(
         formatMessage('Warning'),
         <React.Fragment>
           {formatMessage.rich(
@@ -200,12 +199,16 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         </React.Fragment>,
         { confirmText: formatMessage('Confirm'), onRenderContent: renderConfirmDialogContent }
       );
+
+      if (confirm) {
+        await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
+        props.onChange('');
+        setEditorMode('responseEditor');
+      }
+      return;
     }
-    if (changeMode) {
-      await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
-      props.onChange('');
-      setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
-    }
+
+    setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
   }, [editorMode, allowResponseEditor, props.onChange]);
 
   const navigateToLgPage = React.useCallback(
