@@ -16,8 +16,8 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import { IPivotStyles, Pivot, PivotItem } from 'office-ui-fabric-react/lib/Pivot';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import mergeWith from 'lodash/mergeWith';
 
-import { LgResponseEditorProps } from '../../types';
 import { LGOption } from '../../utils';
 import { ItemWithTooltip } from '../ItemWithTooltip';
 
@@ -25,22 +25,29 @@ import { AttachmentModalityEditor } from './modalityEditors/AttachmentModalityEd
 import { SpeechModalityEditor } from './modalityEditors/SpeechModalityEditor';
 import { SuggestedActionsModalityEditor } from './modalityEditors/SuggestedActionsModalityEditor';
 import { TextModalityEditor } from './modalityEditors/TextModalityEditor';
-import { ModalityType, modalityTypes } from './types';
+import {
+  AttachmentsStructuredResponse,
+  SpeakStructuredResponse,
+  SuggestedActionsStructuredResponse,
+  TextStructuredResponse,
+  ModalityType,
+  TemplateResponse,
+} from './types';
 
 const modalityDocumentUrl =
   'https://docs.microsoft.com/en-us/azure/bot-service/language-generation/language-generation-structured-response-template?view=azure-bot-service-4.0';
 
 const getModalityTooltipText = (modality: ModalityType) => {
   switch (modality) {
-    case 'attachments':
+    case 'Attachments':
       return formatMessage(
         'List of attachments with their type. Used by channels to render as UI cards or other generic file attachment types.'
       );
-    case 'speak':
+    case 'Speak':
       return formatMessage('Spoken text used by the channel to render audibly.');
-    case 'suggestedActions':
+    case 'SuggestedActions':
       return formatMessage('List of actions rendered as suggestions to user.');
-    case 'text':
+    case 'Text':
       return formatMessage('Display text used by the channel to render visually.');
   }
 };
@@ -59,98 +66,97 @@ const styles: { tabs: Partial<IPivotStyles> } = {
 };
 
 const renderModalityEditor = (
-  modality: ModalityType,
+  response: TemplateResponse | undefined,
+  modality: string,
   onRemoveModality: (modality: ModalityType) => () => void,
   onTemplateChange: (templateId: string, body?: string) => void,
   onAttachmentLayoutChange: (layout: string) => void,
   onInputHintChange: (inputHintString: string) => void,
-  modalityTemplates: Record<ModalityType, { template: LgTemplate; templateId: string }>,
+  onUpdateResponseTemplate: (response: TemplateResponse) => void,
   disableRemoveModality: boolean,
   lgOption?: LGOption,
   lgTemplates?: readonly LgTemplate[],
   memoryVariables?: readonly string[]
 ) => {
   switch (modality) {
-    case 'attachments':
+    case 'Attachments':
       return (
         <AttachmentModalityEditor
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
           removeModalityDisabled={disableRemoveModality}
-          template={modalityTemplates.speak.template}
-          templateId={modalityTemplates.speak.templateId}
+          response={response?.Attachments as AttachmentsStructuredResponse}
           onAttachmentLayoutChange={onAttachmentLayoutChange}
-          onRemoveModality={onRemoveModality('attachments')}
+          onRemoveModality={onRemoveModality('Attachments')}
           onTemplateChange={onTemplateChange}
+          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
-    case 'speak':
+    case 'Speak':
       return (
         <SpeechModalityEditor
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
           removeModalityDisabled={disableRemoveModality}
-          template={modalityTemplates.speak.template}
-          templateId={modalityTemplates.speak.templateId}
+          response={response?.Speak as SpeakStructuredResponse}
           onInputHintChange={onInputHintChange}
-          onRemoveModality={onRemoveModality('speak')}
+          onRemoveModality={onRemoveModality('Speak')}
           onTemplateChange={onTemplateChange}
+          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
-    case 'suggestedActions':
+    case 'SuggestedActions':
       return (
         <SuggestedActionsModalityEditor
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
           removeModalityDisabled={disableRemoveModality}
-          template={modalityTemplates.suggestedActions.template}
-          templateId={modalityTemplates.speak.templateId}
-          onRemoveModality={onRemoveModality('suggestedActions')}
+          response={response?.Speak as SuggestedActionsStructuredResponse}
+          onRemoveModality={onRemoveModality('SuggestedActions')}
           onTemplateChange={onTemplateChange}
+          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
-    case 'text':
+    case 'Text':
       return (
         <TextModalityEditor
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
           removeModalityDisabled={disableRemoveModality}
-          template={modalityTemplates.text.template}
-          templateId={modalityTemplates.text.templateId}
-          onRemoveModality={onRemoveModality('text')}
+          response={response?.Text as TextStructuredResponse}
+          onRemoveModality={onRemoveModality('Text')}
           onTemplateChange={onTemplateChange}
+          onUpdateResponseTemplate={onUpdateResponseTemplate}
         />
       );
   }
 };
 
-const getInitialModalities = (modalityTemplates: Record<ModalityType, { template: LgTemplate }>): ModalityType[] => {
-  const modalities = Object.entries(modalityTemplates)
-    .map(([modality, { template }]) => (template ? modality : null))
-    .filter(Boolean);
-  return modalities.length ? (modalities as ModalityType[]) : ['text'];
+const getInitialModalities = (response?: TemplateResponse): ModalityType[] => {
+  const modalities = Object.keys(response || {}) as ModalityType[];
+  return modalities.length ? modalities : ['Text'];
 };
 
-const ModalityPivot = React.memo((props: LgResponseEditorProps) => {
-  const { lgOption, lgTemplates, memoryVariables, onTemplateChange = () => {} } = props;
+type Props = {
+  lgOption?: LGOption;
+  lgTemplates?: readonly LgTemplate[];
+  memoryVariables?: readonly string[];
+  response?: TemplateResponse;
+  onTemplateChange?: (templateId: string, body?: string) => void;
+};
 
-  const modalityTemplates = React.useMemo(
-    () =>
-      modalityTypes.reduce((acc, modality) => {
-        const templateId = `${lgOption?.templateId}_${modality}`;
-        const template = lgTemplates?.find(({ name }) => name === templateId);
-        return { ...acc, [modality]: { template, templateId } };
-      }, {} as Record<ModalityType, { template: LgTemplate; templateId: string }>),
-    [lgTemplates, lgOption?.templateId]
-  );
+const ModalityPivot = React.memo((props: Props) => {
+  const { lgOption, lgTemplates, memoryVariables, response: initialResponse, onTemplateChange = () => {} } = props;
+
+  const [response, setResponse] = React.useState(initialResponse);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [modalities, setModalities] = useState<ModalityType[]>(getInitialModalities(modalityTemplates));
-  const [selectedKey, setSelectedKey] = useState<ModalityType>(modalities[0]);
+  const [modalities, setModalities] = useState<ModalityType[]>(getInitialModalities(response));
+  const [selectedKey, setSelectedKey] = useState<string>(modalities[0] as string);
 
   const renderMenuItemContent = React.useCallback(
     (itemProps: IContextualMenuItemProps, defaultRenders: IContextualMenuItemRenderFunctions) =>
@@ -185,25 +191,25 @@ const ModalityPivot = React.memo((props: LgResponseEditorProps) => {
         onRenderContent: renderMenuItemContent,
       },
       {
-        key: 'text',
+        key: 'Text',
         text: formatMessage('Text'),
         onRenderContent: renderMenuItemContent,
         style: { fontSize: FluentTheme.fonts.small.fontSize },
       },
       {
-        key: 'speak',
+        key: 'Speak',
         text: formatMessage('Speech'),
         onRenderContent: renderMenuItemContent,
         style: { fontSize: FluentTheme.fonts.small.fontSize },
       },
       {
-        key: 'attachments',
+        key: 'Attachments',
         text: formatMessage('Attachments'),
         onRenderContent: renderMenuItemContent,
         style: { fontSize: FluentTheme.fonts.small.fontSize },
       },
       {
-        key: 'suggestedActions',
+        key: 'SuggestedActions',
         text: formatMessage('Suggested Actions'),
         onRenderContent: renderMenuItemContent,
         style: { fontSize: FluentTheme.fonts.small.fontSize },
@@ -224,22 +230,22 @@ const ModalityPivot = React.memo((props: LgResponseEditorProps) => {
 
   const handleRemoveModality = useCallback(
     (modality: ModalityType) => () => {
-      const templateId = modalityTemplates[modality].templateId;
+      // const templateId = modalityTemplates[modality].templateId;
       if (modalities.length > 1) {
         const updatedModalities = modalities.filter((item) => item !== modality);
         setModalities(updatedModalities);
-        setSelectedKey(updatedModalities[0]);
-        onTemplateChange?.(templateId);
+        setSelectedKey(updatedModalities[0] as string);
+        // onTemplateChange?.(templateId);
       }
     },
-    [modalities, setModalities, setSelectedKey, modalityTemplates]
+    [modalities, setModalities, setSelectedKey]
   );
 
   const handleItemClick = useCallback(
     (_, item?: IContextualMenuItem) => {
       if (item?.key) {
         setModalities((current) => [...current, item.key as ModalityType]);
-        setSelectedKey(item.key as ModalityType);
+        setSelectedKey(item.key);
       }
     },
     [setModalities]
@@ -247,13 +253,56 @@ const ModalityPivot = React.memo((props: LgResponseEditorProps) => {
 
   const handleLinkClicked = useCallback((item?: PivotItem) => {
     if (item?.props.itemKey) {
-      setSelectedKey(item?.props.itemKey as ModalityType);
+      setSelectedKey(item?.props.itemKey);
     }
   }, []);
 
-  const handleAttachmentLayoutChange = useCallback((layout: string) => {}, []);
+  const handleUpdateResponseTemplate = React.useCallback(
+    (partialResponse: TemplateResponse) => {
+      if (lgOption?.templateId) {
+        const mergedResponse = mergeWith({}, response, partialResponse, (_, srcValue) => {
+          if (Array.isArray(srcValue)) {
+            return srcValue;
+          }
+        });
+        const mappedResponse = `[Activity
+  ${(Object.values(mergedResponse) as { kind: string; value: unknown }[])
+    .map(({ kind, value }) => {
+      if (!value || (Array.isArray(value) && !value.length)) {
+        return;
+      }
 
-  const handleInputHintChange = useCallback((inputHint: string) => {}, []);
+      if (Array.isArray(value) && ['Attachments', 'SuggestedActions'].includes(kind)) {
+        return `${kind} = ${value.join(' | ')}`;
+      }
+
+      if (typeof value === 'string') {
+        return `${kind} = ${value}`;
+      }
+    })
+    .filter(Boolean)
+    .join('\n\t')}
+]`;
+        setResponse(mergedResponse);
+        onTemplateChange(lgOption.templateId, mappedResponse);
+      }
+    },
+    [lgOption, response]
+  );
+
+  const handleAttachmentLayoutChange = useCallback(
+    (layout: string) => {
+      // handleUpdateResponseTemplate({ AttachmentLayout: { kind: 'AttachmentLayout', value: [layout] }, });
+    },
+    [handleUpdateResponseTemplate]
+  );
+
+  const handleInputHintChange = useCallback(
+    (inputHint: string) => {
+      // handleUpdateResponseTemplate({ InputHint: { kind: 'InputHint', value: [inputHint], } });
+    },
+    [handleUpdateResponseTemplate]
+  );
 
   const addMenuProps = React.useMemo<IContextualMenuProps>(
     () => ({
@@ -278,12 +327,13 @@ const ModalityPivot = React.memo((props: LgResponseEditorProps) => {
 
       <div ref={containerRef}>
         {renderModalityEditor(
+          response,
           selectedKey,
           handleRemoveModality,
           onTemplateChange,
           handleAttachmentLayoutChange,
           handleInputHintChange,
-          modalityTemplates,
+          handleUpdateResponseTemplate,
           modalities.length === 1,
           lgOption,
           lgTemplates,

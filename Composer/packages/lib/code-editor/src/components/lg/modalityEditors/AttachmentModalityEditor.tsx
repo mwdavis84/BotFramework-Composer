@@ -5,29 +5,38 @@ import formatMessage from 'format-message';
 import React from 'react';
 import { IDropdownOption, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 
-import { CommonModalityEditorProps } from '../types';
+import { AttachmentsStructuredResponse, CommonModalityEditorProps } from '../types';
+import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { AttachmentArrayEditor } from './AttachmentArrayEditor';
 
+type Props = CommonModalityEditorProps & { response: AttachmentsStructuredResponse };
+
 const AttachmentModalityEditor = React.memo(
   ({
+    response,
     lgOption,
     lgTemplates,
     memoryVariables,
     removeModalityDisabled: disableRemoveModality,
     onAttachmentLayoutChange,
+    onUpdateResponseTemplate,
     onRemoveModality,
     onTemplateChange,
-  }: CommonModalityEditorProps) => {
-    const [items, setItems] = React.useState<string[]>([]);
+  }: Props) => {
+    const [items, setItems] = React.useState<string[]>(
+      response?.value.map((item) => extractTemplateNameFromExpression(item) || '').filter(Boolean) || []
+    );
 
     const handleChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
-        // onTemplateChange(newItems.map((item) => `- ${item}`).join('\n'));
+        onUpdateResponseTemplate({
+          Attachments: { kind: 'Attachments', value: newItems.map((item) => `\${${item}()}`), valueType: 'direct' },
+        });
       },
-      [setItems]
+      [setItems, onUpdateResponseTemplate]
     );
 
     const attachmentLayoutOptions = React.useMemo<IDropdownOption[]>(
@@ -63,7 +72,7 @@ const AttachmentModalityEditor = React.memo(
         dropdownOptions={attachmentLayoutOptions}
         dropdownPrefix={formatMessage('Layout: ')}
         modalityTitle={formatMessage('Attachments')}
-        modalityType="attachments"
+        modalityType="Attachments"
         removeModalityOptionText={formatMessage('Remove all attachments')}
         onDropdownChange={handleAttachmentStyleChange}
         onRemoveModality={onRemoveModality}

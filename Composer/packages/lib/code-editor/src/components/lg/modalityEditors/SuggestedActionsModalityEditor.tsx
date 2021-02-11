@@ -4,35 +4,31 @@
 import formatMessage from 'format-message';
 import React from 'react';
 
-import { CommonModalityEditorProps } from '../types';
+import { CommonModalityEditorProps, SuggestedActionsStructuredResponse } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
+type Props = CommonModalityEditorProps & { response: SuggestedActionsStructuredResponse };
+
 const SuggestedActionsModalityEditor = React.memo(
   ({
+    response,
     lgOption,
     lgTemplates,
     memoryVariables,
-    template,
-    templateId,
     removeModalityDisabled: disableRemoveModality,
-    onTemplateChange,
     onRemoveModality,
-  }: CommonModalityEditorProps) => {
-    const [items, setItems] = React.useState<string[]>(
-      template?.body
-        ?.replace(/- /g, '')
-        .split('|')
-        .map((item) => item.trim()) || []
-    );
+    onUpdateResponseTemplate,
+  }: Props) => {
+    const [items, setItems] = React.useState<string[]>(response?.value || []);
 
     const handleChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
-        onTemplateChange(templateId, '- ' + newItems.map((item) => item).join(' | '));
+        onUpdateResponseTemplate({ SuggestedActions: { kind: 'SuggestedActions', value: newItems } });
       },
-      [setItems, templateId, onTemplateChange]
+      [setItems, onUpdateResponseTemplate]
     );
 
     return (
@@ -41,7 +37,7 @@ const SuggestedActionsModalityEditor = React.memo(
         contentTitle={formatMessage('Actions')}
         disableRemoveModality={disableRemoveModality}
         modalityTitle={formatMessage('Suggested Actions')}
-        modalityType="suggestedActions"
+        modalityType="SuggestedActions"
         removeModalityOptionText={formatMessage('Remove all suggested actions')}
         onRemoveModality={onRemoveModality}
       >

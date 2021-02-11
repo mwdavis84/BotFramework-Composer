@@ -39,20 +39,19 @@ export type LgLanguageContext =
   | 'templateName'
   | 'root';
 
-export const modalityTypes = ['text', 'speak', 'attachments', 'suggestedActions'] as const;
-export type ModalityType = typeof modalityTypes[number];
+export type TemplateResponse = Partial<Record<StructuredResponse['kind'], StructuredResponse>>;
 
 export type CommonModalityEditorProps = {
+  response?: TemplateResponse;
   removeModalityDisabled: boolean;
   lgOption?: LGOption;
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
-  template?: LgTemplate;
-  templateId: string;
   onAttachmentLayoutChange?: (layout: string) => void;
   onInputHintChange?: (inputHint: string) => void;
   onTemplateChange: (templateId: string, body?: string) => void;
   onRemoveModality: () => void;
+  onUpdateResponseTemplate: (response: TemplateResponse) => void;
 };
 
 /**
@@ -61,14 +60,10 @@ export type CommonModalityEditorProps = {
 export const acceptedInputHintValues = ['expecting', 'ignoring', 'accepting'] as const;
 export const acceptedAttachmentLayout = ['carousel', 'list'] as const;
 
-export const structuredResponseKeys = [
-  'Text',
-  'Speak',
-  'Attachments',
-  'AttachmentLayout',
-  'InputHint',
-  'SuggestedActions',
-] as const;
+export const modalityType = ['Text', 'Speak', 'Attachments', 'SuggestedActions'] as const;
+export const structuredResponseKeys = [...modalityType, 'AttachmentLayout', 'InputHint'] as const;
+
+export type ModalityType = typeof modalityType[number];
 
 export type TextStructuredResponse = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
 export type SpeakStructuredResponse = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };

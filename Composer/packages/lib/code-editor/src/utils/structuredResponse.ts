@@ -14,6 +14,7 @@ import {
   StructuredResponse,
   structuredResponseKeys,
   SuggestedActionsStructuredResponse,
+  TemplateResponse,
   TextStructuredResponse,
 } from '../components/lg/types';
 
@@ -85,9 +86,7 @@ const getStructuredResponseByKind = (
  * Converts template properties to structured response.
  * @param lgTemplate LgTemplate to convert.
  */
-export const getStructuredResponseFromTemplate = (
-  lgTemplate?: LgTemplate
-): Partial<Record<StructuredResponse['kind'], unknown>> | undefined => {
+export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): TemplateResponse | undefined => {
   if (!lgTemplate) {
     return undefined;
   }
@@ -99,14 +98,14 @@ export const getStructuredResponseFromTemplate = (
     return undefined;
   }
 
-  const structuredResponse = structuredResponseKeys.reduce((response, key) => {
+  const structuredResponse: TemplateResponse = structuredResponseKeys.reduce((response, key) => {
     const value = getStructuredResponseByKind(lgTemplate, key);
     if (value !== undefined) {
       response[key] = value;
     }
 
     return response;
-  }, {} as Partial<Record<StructuredResponse['kind'], unknown>>);
+  }, {} as TemplateResponse);
 
   return Object.keys(structuredResponse).length ? structuredResponse : undefined;
 };

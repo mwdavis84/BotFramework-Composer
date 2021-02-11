@@ -3,28 +3,29 @@
 
 import formatMessage from 'format-message';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 
-import { CommonModalityEditorProps } from '../types';
+import { CommonModalityEditorProps, SpeakStructuredResponse } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
+type Props = CommonModalityEditorProps & { response: SpeakStructuredResponse };
+
 const SpeechModalityEditor = React.memo(
   ({
     removeModalityDisabled: disableRemoveModality,
-    template,
-    templateId,
     lgOption,
     lgTemplates,
     memoryVariables,
     onInputHintChange,
     onTemplateChange,
     onRemoveModality,
-  }: CommonModalityEditorProps) => {
-    const [items, setItems] = useState<string[]>(template?.body?.replace(/- /g, '').split('\n') || []);
+  }: Props) => {
+    const [items, setItems] = React.useState<string[]>([]);
+    const [templateId] = React.useState<string>(`${lgOption?.templateId}_speak}`);
 
-    const handleChange = useCallback(
+    const handleChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
         onTemplateChange(templateId, newItems.map((item) => `- ${item}`).join('\n'));
@@ -55,9 +56,9 @@ const SpeechModalityEditor = React.memo(
       []
     );
 
-    const handleInputHintChange = useCallback((_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+    const handleInputHintChange = React.useCallback((_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
       if (option) {
-        typeof onInputHintChange === 'function' && onInputHintChange(option.key as string);
+        onInputHintChange?.(option.key as string);
       }
     }, []);
 
@@ -69,7 +70,7 @@ const SpeechModalityEditor = React.memo(
         dropdownOptions={inputHintOptions}
         dropdownPrefix={formatMessage('Input hint: ')}
         modalityTitle={formatMessage('Suggested Actions')}
-        modalityType="suggestedActions"
+        modalityType="Speak"
         removeModalityOptionText={formatMessage('Remove all speech responses')}
         onDropdownChange={handleInputHintChange}
         onRemoveModality={onRemoveModality}

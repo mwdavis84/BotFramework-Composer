@@ -1,33 +1,59 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { LgTemplate } from '@bfc/shared';
 import formatMessage from 'format-message';
 import React, { useCallback, useState } from 'react';
 
-import { CommonModalityEditorProps } from '../types';
+import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
+import { CommonModalityEditorProps, TextStructuredResponse } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
+const getInitialTemplateId = (response: TextStructuredResponse): string | undefined => {
+  if (response?.value) {
+    return extractTemplateNameFromExpression(Array.isArray(response.value) ? response.value[0] : response.value);
+  }
+};
+
+const getInitialItems = (response: TextStructuredResponse, lgTemplates?: readonly LgTemplate[]): string[] => {
+  const templateId = getInitialTemplateId(response);
+  const template = lgTemplates?.find(({ name }) => name === templateId);
+  return response?.value && template?.body
+    ? template?.body?.replace(/- /g, '').split('\n') || []
+    : response?.value || [];
+};
+
+type Props = CommonModalityEditorProps & { response: TextStructuredResponse };
+
 const TextModalityEditor = React.memo(
   ({
+    response,
     removeModalityDisabled: disableRemoveModality,
-    template,
-    templateId,
     lgOption,
     lgTemplates,
     memoryVariables,
     onTemplateChange,
     onRemoveModality,
-  }: CommonModalityEditorProps) => {
-    const [items, setItems] = useState<string[]>(template?.body?.replace(/- /g, '').split('\n') || []);
+    onUpdateResponseTemplate,
+  }: Props) => {
+    const [templateId, setTemplateId] = React.useState(getInitialTemplateId(response));
+    const [items, setItems] = useState<string[]>(getInitialItems(response, lgTemplates));
 
     const handleChange = useCallback(
       (newItems: string[]) => {
         setItems(newItems);
-        onTemplateChange(templateId, newItems.map((item) => `- ${item}`).join('\n'));
+        if (newItems.length === 1 && lgOption?.templateId) {
+          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [newItems[0]], valueType: 'direct' } });
+        } else {
+          const id = templateId || `${lgOption?.templateId}_text`;
+          setTemplateId(id);
+          onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
+          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [`\${${id}}`], valueType: 'template' } });
+        }
       },
-      [setItems, templateId, onTemplateChange]
+      [lgOption, setItems, templateId, onTemplateChange, onUpdateResponseTemplate]
     );
 
     return (
@@ -38,7 +64,7 @@ const TextModalityEditor = React.memo(
         contentTitle={formatMessage('Response Variations')}
         disableRemoveModality={disableRemoveModality}
         modalityTitle={formatMessage('Text')}
-        modalityType="text"
+        modalityType="Text"
         removeModalityOptionText={formatMessage('Remove all text responses')}
         onRemoveModality={onRemoveModality}
       >
