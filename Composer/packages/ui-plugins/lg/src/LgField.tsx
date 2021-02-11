@@ -223,11 +223,15 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         if (body) {
           await shellApi.debouncedUpdateLgTemplate(lgFileId, templateId, body);
         } else {
-          shellApi.removeLgTemplate(lgFileId, templateId);
+          await shellApi.removeLgTemplate(lgFileId, templateId);
+        }
+
+        if (templateId === lgOption.templateId) {
+          props.onChange(body);
         }
       }
     },
-    [designerId, lgFileId, lgName, shellApi]
+    [designerId, lgFileId, lgName, shellApi, lgOption, props.onChange]
   );
 
   return (

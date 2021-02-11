@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 export const activityTemplateType = 'Activity';
-export const emptyTemplateBodyRegex = /^$|-(\s)?/;
 
 export const jsLgToolbarMenuClassName = 'js-lg-toolbar-menu';
 

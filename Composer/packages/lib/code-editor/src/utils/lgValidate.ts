@@ -3,7 +3,7 @@
 
 import { LgTemplate } from '@bfc/shared';
 
-import { emptyTemplateBodyRegex, activityTemplateType } from '../components/lg/constants';
+import { activityTemplateType } from '../components/lg/constants';
 
 import { getStructuredResponseFromTemplate } from './structuredResponse';
 
@@ -13,7 +13,7 @@ import { getStructuredResponseFromTemplate } from './structuredResponse';
  */
 export const validateStructuredResponse = (lgTemplate: LgTemplate) => {
   // If empty template return true
-  if (!lgTemplate.body || emptyTemplateBodyRegex.test(lgTemplate.body)) {
+  if (!lgTemplate.body) {
     return true;
   }
 

@@ -3,17 +3,17 @@
 
 import { LgTemplate } from '@bfc/shared';
 
-import { emptyTemplateBodyRegex, activityTemplateType } from '../components/lg/constants';
+import { activityTemplateType } from '../components/lg/constants';
 import {
   acceptedAttachmentLayout,
   acceptedInputHintValues,
   AttachmentLayoutStructuredResponseItem,
   AttachmentsStructuredResponseItem,
   InputHintStructuredResponseItem,
+  PartialStructuredResponse,
   SpeakStructuredResponseItem,
   StructuredResponseItem,
   SuggestedActionsStructuredResponseItem,
-  PartialStructuredResponse,
   TextStructuredResponseItem,
 } from '../components/lg/types';
 
@@ -89,7 +89,7 @@ export const getStructuredResponseFromTemplate = (lgTemplate?: LgTemplate): Part
   if (!lgTemplate) {
     return undefined;
   }
-  if (!lgTemplate.body || emptyTemplateBodyRegex.test(lgTemplate.body)) {
+  if (!lgTemplate.body) {
     return undefined;
   }
 

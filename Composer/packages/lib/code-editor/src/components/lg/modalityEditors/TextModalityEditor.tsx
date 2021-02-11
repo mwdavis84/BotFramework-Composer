@@ -50,9 +50,7 @@ const TextModalityEditor = React.memo(
           const id = templateId || `${lgOption?.templateId}_text`;
           setTemplateId(id);
           onUpdateResponseTemplate({ Text: { kind: 'Text', value: [`\${${id}()}`], valueType: 'template' } });
-          ((templateId: string) => {
-            setTimeout(() => onTemplateChange(templateId, newItems.map((item) => `- ${item}`).join('\n')), 300);
-          })(id);
+          onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
         }
       },
       [lgOption, setItems, templateId, onTemplateChange, onUpdateResponseTemplate]

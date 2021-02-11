@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { generateUniqueId, LgTemplate } from '@bfc/shared';
+import { generateDesignerId, LgTemplate } from '@bfc/shared';
 import uniq from 'lodash/uniq';
 
 import { LgLanguageContext, PropertyItem } from '../components/lg/types';
@@ -238,7 +238,7 @@ export const getAllNodes = <T extends { id: string; children?: T[] }>(
 };
 
 export const getUniqueTemplateName = (templateId: string, templates?: readonly LgTemplate[]): string => {
-  const id = `${templateId}_${generateUniqueId()}`;
+  const id = `${templateId}_${generateDesignerId()}`;
   return !templates || templates.find(({ name }) => name === id)
     ? (getUniqueTemplateName(templateId, templates) as string)
     : id;

@@ -237,16 +237,12 @@ export const ModalityPivot = React.memo((props: Props) => {
         setSelectedModality(updatedModalities[0] as string);
 
         if (lgOption?.templateId) {
-          const mergedResponse = mergeWith({}, structuredResponse);
+          const mergedResponse = mergeWith({}, structuredResponse) as PartialStructuredResponse;
           delete mergedResponse[modality];
 
           setStructuredResponse(mergedResponse);
-
           const mappedResponse = structuredResponseToString(mergedResponse);
-          ((templateId: string) =>
-            setTimeout(() => {
-              onTemplateChange(templateId, mappedResponse);
-            }, 300))(lgOption.templateId);
+          onTemplateChange(lgOption.templateId, mappedResponse);
         }
       }
     },
@@ -280,10 +276,8 @@ export const ModalityPivot = React.memo((props: Props) => {
         setStructuredResponse(mergedResponse);
 
         const mappedResponse = structuredResponseToString(mergedResponse);
-        ((templateId: string) =>
-          setTimeout(() => {
-            onTemplateChange(templateId, mappedResponse);
-          }, 300))(lgOption.templateId);
+
+        onTemplateChange(lgOption.templateId, mappedResponse);
       }
     },
     [lgOption, structuredResponse]
