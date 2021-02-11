@@ -138,6 +138,7 @@ export const cardPropPossibleValueType = {
   Speak: 'Text | ${Expression}',
   Attachments: 'List of attachments',
   InputHint: 'accepting | ignoring | expecting',
+  AttachmentLayout: 'list | carousel',
   SuggestedActions: 'Text | ${Expression}',
 };
 
@@ -146,6 +147,6 @@ export const cardPropDict = {
   Suggestions: ['SuggestionActions'],
   Cards: ['title', 'subtitle', 'text', 'image', 'buttons'],
   Attachment: ['contenttype', 'content'],
-  Activity: ['Text', 'Speak', 'Attachments', 'SuggestedActions', 'InputHint'],
+  Activity: ['Text', 'Speak', 'Attachments', 'SuggestedActions', 'InputHint', 'AttachmentLayout'],
   Others: ['type', 'name', 'value'],
 };
