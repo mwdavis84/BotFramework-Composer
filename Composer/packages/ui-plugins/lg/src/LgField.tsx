@@ -4,7 +4,7 @@
 /** @jsx jsx */
 import { FieldLabel, useFormData } from '@bfc/adaptive-form';
 import { LgEditor, LgEditorMode, validateStructuredResponse } from '@bfc/code-editor';
-import { FieldProps, useShellApi } from '@bfc/extension-client';
+import { DiagnosticSeverity, FieldProps, useShellApi } from '@bfc/extension-client';
 import { filterTemplateDiagnostics } from '@bfc/indexers';
 import { CodeEditorSettings, LgMetaData, LgTemplateRef, LgType } from '@bfc/shared';
 import { OpenConfirmModal } from '@bfc/ui-shared';
@@ -13,6 +13,7 @@ import formatMessage from 'format-message';
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Text } from 'office-ui-fabric-react/lib/Text';
+import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { locateLgTemplatePosition } from './locateLgTemplatePosition';
@@ -120,12 +121,21 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     body: getInitialTemplate(name, value),
   };
 
-  const allowResponseEditor = React.useMemo(() => validateStructuredResponse(template), [template]);
+  const diagnostics = lgFile ? filterTemplateDiagnostics(lgFile, template.name) : [];
+
+  const responseEditorLinkDisabled = React.useMemo(
+    () => diagnostics.some((d) => d.severity === DiagnosticSeverity.Error),
+    [diagnostics]
+  );
+
+  const allowResponseEditor = React.useMemo(() => !responseEditorLinkDisabled && validateStructuredResponse(template), [
+    template,
+    responseEditorLinkDisabled,
+  ]);
+
   const [editorMode, setEditorMode] = React.useState<LgEditorMode>(
     allowResponseEditor ? 'responseEditor' : 'codeEditor'
   );
-
-  const diagnostics = lgFile ? filterTemplateDiagnostics(lgFile, template.name) : [];
 
   const lgOption = {
     projectId,
@@ -222,7 +232,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
 
   return (
     <React.Fragment>
-      <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
+      <Stack horizontal horizontalAlign="space-between" styles={{ root: { marginBottom: 4 } }} verticalAlign="center">
         <FieldLabel
           description={description}
           helpLink={uiOptions?.helpLink}
@@ -230,11 +240,19 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
           label={label}
           required={required}
         />
-        <Link as="button" styles={linkStyles} onClick={modeChange}>
-          {editorMode === 'codeEditor'
-            ? formatMessage('switch to response editor')
-            : formatMessage('switch to code editor')}
-        </Link>
+        <TooltipHost
+          content={
+            responseEditorLinkDisabled
+              ? formatMessage('In order to use the response editor, please fix your template errors first.')
+              : undefined
+          }
+        >
+          <Link as="button" disabled={responseEditorLinkDisabled} styles={linkStyles} onClick={modeChange}>
+            {editorMode === 'codeEditor'
+              ? formatMessage('switch to response editor')
+              : formatMessage('switch to code editor')}
+          </Link>
+        </TooltipHost>
       </Stack>
       <LgEditor
         hidePlaceholder
