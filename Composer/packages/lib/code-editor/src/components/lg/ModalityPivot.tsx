@@ -33,6 +33,8 @@ import {
   TextStructuredResponseItem,
   ModalityType,
   PartialStructuredResponse,
+  AttachmentLayoutStructuredResponseItem,
+  InputHintStructuredResponseItem,
 } from './types';
 
 const modalityDocumentUrl =
@@ -285,14 +287,18 @@ export const ModalityPivot = React.memo((props: Props) => {
 
   const onAttachmentLayoutChange = useCallback(
     (layout: string) => {
-      // handleUpdateResponseTemplate({ AttachmentLayout: { kind: 'AttachmentLayout', value: [layout] }, });
+      onUpdateResponseTemplate({
+        AttachmentLayout: { kind: 'AttachmentLayout', value: layout } as AttachmentLayoutStructuredResponseItem,
+      });
     },
     [onUpdateResponseTemplate]
   );
 
   const onInputHintChange = useCallback(
     (inputHint: string) => {
-      // handleUpdateResponseTemplate({ InputHint: { kind: 'InputHint', value: [inputHint], } });
+      onUpdateResponseTemplate({
+        InputHint: { kind: 'InputHint', value: inputHint } as InputHintStructuredResponseItem,
+      });
     },
     [onUpdateResponseTemplate]
   );
