@@ -5,12 +5,15 @@ import formatMessage from 'format-message';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 import React from 'react';
 
-import { CommonModalityEditorProps, SpeakStructuredResponseItem } from '../types';
+import { CommonModalityEditorProps, InputHintStructuredResponseItem, SpeechStructuredResponseItem } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
-type Props = CommonModalityEditorProps & { response: SpeakStructuredResponseItem };
+type Props = CommonModalityEditorProps & {
+  response: SpeechStructuredResponseItem;
+  inputHint?: InputHintStructuredResponseItem['value'] | 'none';
+};
 
 const SpeechModalityEditor = React.memo(
   ({
@@ -18,12 +21,13 @@ const SpeechModalityEditor = React.memo(
     lgOption,
     lgTemplates,
     memoryVariables,
+    inputHint = 'none',
     onInputHintChange,
     onTemplateChange,
     onRemoveModality,
   }: Props) => {
     const [items, setItems] = React.useState<string[]>([]);
-    const [templateId] = React.useState<string>(`${lgOption?.templateId}_speak}`);
+    const [templateId] = React.useState<string>(`${lgOption?.templateId}_speech}`);
 
     const handleChange = React.useCallback(
       (newItems: string[]) => {
@@ -38,29 +42,35 @@ const SpeechModalityEditor = React.memo(
         {
           key: 'none',
           text: formatMessage('None'),
-          selected: true,
+          selected: inputHint === 'none',
         },
         {
-          key: 'acceptingInput',
+          key: 'accepting',
           text: formatMessage('Accepting'),
+          selected: inputHint === 'accepting',
         },
         {
-          key: 'ignoringInput',
+          key: 'ignoring',
           text: formatMessage('Ignoring'),
+          selected: inputHint === 'ignoring',
         },
         {
-          key: 'expectingInput',
+          key: 'expecting',
           text: formatMessage('Expecting'),
+          selected: inputHint === 'expecting',
         },
       ],
-      []
+      [inputHint]
     );
 
-    const handleInputHintChange = React.useCallback((_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-      if (option) {
-        onInputHintChange?.(option.key as string);
-      }
-    }, []);
+    const handleInputHintChange = React.useCallback(
+      (_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+        if (option) {
+          onInputHintChange?.(option.key as string);
+        }
+      },
+      [onInputHintChange]
+    );
 
     return (
       <ModalityEditorContainer
@@ -76,11 +86,11 @@ const SpeechModalityEditor = React.memo(
         onRemoveModality={onRemoveModality}
       >
         <StringArrayEditor
+          isSpeech
           items={items}
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
-          selectedKey="speak"
           onChange={handleChange}
         />
       </ModalityEditorContainer>

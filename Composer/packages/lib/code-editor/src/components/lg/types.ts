@@ -66,7 +66,7 @@ export const structuredResponseKeys = [...modalityType, 'AttachmentLayout', 'Inp
 export type ModalityType = typeof modalityType[number];
 
 export type TextStructuredResponseItem = { kind: 'Text'; value: string[]; valueType: 'template' | 'direct' };
-export type SpeakStructuredResponseItem = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
+export type SpeechStructuredResponseItem = { kind: 'Speak'; value: string[]; valueType: 'template' | 'direct' };
 export type AttachmentsStructuredResponseItem = {
   kind: 'Attachments';
   value: string[];
@@ -81,7 +81,7 @@ export type SuggestedActionsStructuredResponseItem = { kind: 'SuggestedActions';
 
 export type StructuredResponseItem =
   | TextStructuredResponseItem
-  | SpeakStructuredResponseItem
+  | SpeechStructuredResponseItem
   | SuggestedActionsStructuredResponseItem
   | InputHintStructuredResponseItem
   | AttachmentLayoutStructuredResponseItem

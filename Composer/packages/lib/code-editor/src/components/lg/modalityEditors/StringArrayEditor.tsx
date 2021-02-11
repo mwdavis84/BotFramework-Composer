@@ -12,7 +12,7 @@ import { LGOption } from '../../../utils';
 import { getCursorContextWithinLine } from '../../../utils/lgUtils';
 import { jsLgToolbarMenuClassName } from '../constants';
 import { LgEditorToolbar } from '../LgEditorToolbar';
-import { LgSpeakModalityToolbar, SSMLTagType } from '../LgSpeakModalityToolbar';
+import { LgSpeechModalityToolbar, SSMLTagType } from '../LgSpeechModalityToolbar';
 
 import { StringArrayItem } from './StringArrayItem';
 
@@ -52,15 +52,15 @@ const getSSMLProps = (tag: 'prosody' | 'audio' | 'break'): string => {
 
 type StringArrayEditorProps = {
   items: string[];
-  selectedKey: string;
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   lgOption?: LGOption;
+  isSpeech?: boolean;
   onChange: (items: string[]) => void;
 };
 
 const StringArrayEditor = React.memo(
-  ({ items, lgTemplates, memoryVariables, selectedKey, onChange }: StringArrayEditorProps) => {
+  ({ items, lgTemplates, memoryVariables, isSpeech = false, onChange }: StringArrayEditorProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
     const [calloutTargetElement, setCalloutTargetElement] = useState<HTMLInputElement | null>(null);
@@ -224,9 +224,9 @@ const StringArrayEditor = React.memo(
 
     const toolbar = React.useMemo(
       () =>
-        selectedKey === 'speak' ? (
-          <LgSpeakModalityToolbar
-            key="lg-speak-toolbar"
+        isSpeech ? (
+          <LgSpeechModalityToolbar
+            key="lg-speech-toolbar"
             lgTemplates={lgTemplates}
             properties={memoryVariables}
             onInsertSSMLTag={insertSSMLTag}
@@ -240,7 +240,7 @@ const StringArrayEditor = React.memo(
             onSelectToolbarMenuItem={selectToolbarMenuItem}
           />
         ),
-      [selectedKey, lgTemplates, memoryVariables, insertSSMLTag, selectToolbarMenuItem]
+      [isSpeech, lgTemplates, memoryVariables, insertSSMLTag, selectToolbarMenuItem]
     );
 
     return (

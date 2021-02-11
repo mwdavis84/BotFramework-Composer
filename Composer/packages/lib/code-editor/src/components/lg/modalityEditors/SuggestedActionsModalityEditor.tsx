@@ -46,7 +46,6 @@ const SuggestedActionsModalityEditor = React.memo(
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
-          selectedKey="text"
           onChange={handleChange}
         />
       </ModalityEditorContainer>

@@ -203,9 +203,10 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     }
     if (changeMode) {
       await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
+      props.onChange('');
       setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
     }
-  }, [editorMode, allowResponseEditor]);
+  }, [editorMode, allowResponseEditor, props.onChange]);
 
   const navigateToLgPage = React.useCallback(
     (lgFileId: string) => {

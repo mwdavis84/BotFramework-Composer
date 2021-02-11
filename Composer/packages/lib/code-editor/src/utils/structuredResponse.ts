@@ -11,7 +11,7 @@ import {
   AttachmentsStructuredResponseItem,
   InputHintStructuredResponseItem,
   PartialStructuredResponse,
-  SpeakStructuredResponseItem,
+  SpeechStructuredResponseItem,
   StructuredResponseItem,
   SuggestedActionsStructuredResponseItem,
   TextStructuredResponseItem,
@@ -50,7 +50,7 @@ const getStructuredResponseByKind = (
     case 'Text':
       return getStructuredResponseHelper(value, 'Text') as TextStructuredResponseItem;
     case 'Speak':
-      return getStructuredResponseHelper(value, 'Speak') as SpeakStructuredResponseItem;
+      return getStructuredResponseHelper(value, 'Speak') as SpeechStructuredResponseItem;
     case 'Attachments':
       return getStructuredResponseHelper(value, 'Attachments') as AttachmentsStructuredResponseItem;
     case 'SuggestedActions': {
@@ -131,7 +131,7 @@ export const structuredResponseToString = (structuredResponse: PartialStructured
   const getValue = (kind: StructuredResponseItem['kind']): string | undefined => {
     switch (kind) {
       case 'Speak': {
-        const item = structuredResponse.Speak as SpeakStructuredResponseItem;
+        const item = structuredResponse.Speak as SpeechStructuredResponseItem;
         return item.value[0];
       }
       case 'Text': {

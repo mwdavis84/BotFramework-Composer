@@ -5,13 +5,20 @@ import formatMessage from 'format-message';
 import React from 'react';
 import { IDropdownOption, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
 
-import { AttachmentsStructuredResponseItem, CommonModalityEditorProps } from '../types';
+import {
+  AttachmentsStructuredResponseItem,
+  AttachmentLayoutStructuredResponseItem,
+  CommonModalityEditorProps,
+} from '../types';
 import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { AttachmentArrayEditor } from './AttachmentArrayEditor';
 
-type Props = CommonModalityEditorProps & { response: AttachmentsStructuredResponseItem };
+type Props = CommonModalityEditorProps & {
+  response: AttachmentsStructuredResponseItem;
+  attachmentLayout?: AttachmentLayoutStructuredResponseItem['value'];
+};
 
 const AttachmentModalityEditor = React.memo(
   ({
@@ -20,6 +27,7 @@ const AttachmentModalityEditor = React.memo(
     lgTemplates,
     memoryVariables,
     removeModalityDisabled: disableRemoveModality,
+    attachmentLayout = 'list',
     onAttachmentLayoutChange,
     onUpdateResponseTemplate,
     onRemoveModality,
@@ -45,21 +53,25 @@ const AttachmentModalityEditor = React.memo(
         {
           key: 'list',
           text: formatMessage('List'),
-          selected: true,
+          selected: attachmentLayout === 'list',
         },
         {
           key: 'carousal',
           text: formatMessage('Carousal'),
+          selected: attachmentLayout === 'carousel',
         },
       ],
-      []
+      [attachmentLayout]
     );
 
-    const attachmentLayoutChange = React.useCallback((_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
-      if (option) {
-        onAttachmentLayoutChange?.(option.key as string);
-      }
-    }, []);
+    const attachmentLayoutChange = React.useCallback(
+      (_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+        if (option) {
+          onAttachmentLayoutChange?.(option.key as string);
+        }
+      },
+      [onAttachmentLayoutChange]
+    );
 
     return (
       <ModalityEditorContainer

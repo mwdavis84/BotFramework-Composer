@@ -28,13 +28,14 @@ import { SuggestedActionsModalityEditor } from './modalityEditors/SuggestedActio
 import { TextModalityEditor } from './modalityEditors/TextModalityEditor';
 import {
   AttachmentsStructuredResponseItem,
-  SpeakStructuredResponseItem,
+  SpeechStructuredResponseItem,
   SuggestedActionsStructuredResponseItem,
   TextStructuredResponseItem,
   ModalityType,
   PartialStructuredResponse,
   AttachmentLayoutStructuredResponseItem,
   InputHintStructuredResponseItem,
+  modalityType,
 } from './types';
 
 const modalityDocumentUrl =
@@ -108,6 +109,7 @@ const renderModalityEditor = ({
       return (
         <AttachmentModalityEditor
           {...commonProps}
+          attachmentLayout={(structuredResponse?.AttachmentLayout as AttachmentLayoutStructuredResponseItem).value}
           response={structuredResponse?.Attachments as AttachmentsStructuredResponseItem}
           onAttachmentLayoutChange={onAttachmentLayoutChange}
         />
@@ -116,7 +118,8 @@ const renderModalityEditor = ({
       return (
         <SpeechModalityEditor
           {...commonProps}
-          response={structuredResponse?.Speak as SpeakStructuredResponseItem}
+          inputHint={(structuredResponse?.InputHint as InputHintStructuredResponseItem).value}
+          response={structuredResponse?.Speak as SpeechStructuredResponseItem}
           onInputHintChange={onInputHintChange}
         />
       );
@@ -133,7 +136,9 @@ const renderModalityEditor = ({
 };
 
 const getInitialModalities = (structuredResponse?: PartialStructuredResponse): ModalityType[] => {
-  const modalities = Object.keys(structuredResponse || {}) as ModalityType[];
+  const modalities = Object.keys(structuredResponse || {}).filter((m) =>
+    modalityType.includes(m as ModalityType)
+  ) as ModalityType[];
   return modalities.length ? modalities : ['Text'];
 };
 
@@ -297,7 +302,10 @@ export const ModalityPivot = React.memo((props: Props) => {
   const onInputHintChange = useCallback(
     (inputHint: string) => {
       onUpdateResponseTemplate({
-        InputHint: { kind: 'InputHint', value: inputHint } as InputHintStructuredResponseItem,
+        InputHint:
+          inputHint !== 'none'
+            ? ({ kind: 'InputHint', value: inputHint } as InputHintStructuredResponseItem)
+            : undefined,
       });
     },
     [onUpdateResponseTemplate]

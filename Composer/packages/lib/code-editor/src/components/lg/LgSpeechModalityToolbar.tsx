@@ -30,7 +30,7 @@ type Props = Omit<LgEditorToolbarProps, 'moreMenuItems'> & {
   onInsertSSMLTag: (tagType: SSMLTagType) => void;
 };
 
-export const LgSpeakModalityToolbar = React.memo((props: Props) => {
+export const LgSpeechModalityToolbar = React.memo((props: Props) => {
   const { onInsertSSMLTag, ...restProps } = props;
 
   const renderHeaderContent = React.useCallback(
