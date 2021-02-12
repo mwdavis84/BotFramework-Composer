@@ -59,7 +59,7 @@ const TextModalityEditor = React.memo(
           onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
         }
       },
-      [lgOption, setItems, templateId, onTemplateChange, onUpdateResponseTemplate]
+      [lgOption, setItems, templateId, onRemoveTemplate, onTemplateChange, onUpdateResponseTemplate]
     );
 
     return (

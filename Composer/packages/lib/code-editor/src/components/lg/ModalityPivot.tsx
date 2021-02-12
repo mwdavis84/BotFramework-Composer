@@ -242,7 +242,6 @@ export const ModalityPivot = React.memo((props: Props) => {
 
   const onRemoveModality = useCallback(
     (modality: ModalityType) => {
-      // const templateId = modalityTemplates[modality].templateId;
       if (modalities.length > 1) {
         const updatedModalities = modalities.filter((item) => item !== modality);
         setModalities(updatedModalities);
