@@ -177,8 +177,8 @@ const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldI
   return (
     <Input
       componentRef={(ref) => (itemRef.current = ref)}
+      defaultValue={value}
       styles={textFieldStyles}
-      value={value}
       onChange={onChange}
       onClick={click}
       onFocus={focus}
