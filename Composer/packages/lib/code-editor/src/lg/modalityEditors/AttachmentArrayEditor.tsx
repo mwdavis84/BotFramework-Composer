@@ -91,6 +91,7 @@ export const AttachmentArrayEditor = React.memo(
           const templateId = getUniqueTemplateName(`${lgOption?.templateId}_attachment`, lgTemplates);
           onChange([...items, templateId]);
           onTemplateChange(templateId, item?.data.template);
+          setCurrentIndex(items.length);
         }
       },
       [items, lgOption, lgTemplates, onChange, onTemplateChange]
@@ -102,6 +103,10 @@ export const AttachmentArrayEditor = React.memo(
           key: 'addCustom',
           text: formatMessage('Add Custom'),
           itemProps: addButtonMenuItemProps,
+          onClick: onAddTemplateClick,
+          data: {
+            template: '',
+          },
         },
         {
           key: 'template',
@@ -167,6 +172,10 @@ export const AttachmentArrayEditor = React.memo(
                 key: 'adaptive',
                 text: formatMessage('Adaptive card'),
                 itemProps: addButtonMenuItemProps,
+                onClick: onAddTemplateClick,
+                data: {
+                  template: cardTemplates.adaptive,
+                },
               },
             ],
           },
