@@ -225,12 +225,16 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
         props.onChange('');
         setEditorMode('responseEditor');
+        shellApi.telemetryClient.track('LGEditorSwitchToResponseEditor');
       }
       return;
     }
 
+    shellApi.telemetryClient.track(
+      editorMode === 'codeEditor' ? 'LGEditorSwitchToCodeEditor' : 'LGEditorSwitchToResponseEditor'
+    );
     setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
-  }, [editorMode, allowResponseEditor, props.onChange]);
+  }, [editorMode, allowResponseEditor, props.onChange, shellApi.telemetryClient]);
 
   const navigateToLgPage = React.useCallback(
     (lgFileId: string) => {

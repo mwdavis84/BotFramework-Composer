@@ -14,6 +14,7 @@ import { getCursorContextWithinLine } from '../../utils/lgUtils';
 import { jsLgToolbarMenuClassName } from '../constants';
 import { LgEditorToolbar } from '../LgEditorToolbar';
 import { LgSpeechModalityToolbar, SSMLTagType } from '../LgSpeechModalityToolbar';
+import { ToolbarButtonPayload } from '../types';
 
 import { StringArrayItem } from './StringArrayItem';
 
@@ -151,7 +152,7 @@ export const StringArrayEditor = React.memo(
     }, [items, onChange]);
 
     const onSelectToolbarMenuItem = React.useCallback(
-      (text: string) => {
+      (text: string, itemType: ToolbarButtonPayload['kind']) => {
         if (typeof currentIndex === 'number' && currentIndex < items.length) {
           const updatedItems = [...items];
 
@@ -177,8 +178,13 @@ export const StringArrayEditor = React.memo(
 
           calloutTargetElement?.focus();
         }
+        telemetryClient.track('LGQuickInsertItem', {
+          itemType,
+          item: itemType === 'function' ? text : undefined,
+          location: 'LGResponseEditor',
+        });
       },
-      [calloutTargetElement, currentIndex, items, onChange]
+      [calloutTargetElement, currentIndex, items, telemetryClient, onChange]
     );
 
     const onInsertSSMLTag = React.useCallback(
@@ -227,6 +233,11 @@ export const StringArrayEditor = React.memo(
 
           calloutTargetElement?.focus();
         }
+        telemetryClient.track('LGQuickInsertItem', {
+          itemType: 'SSML',
+          item: ssmlTagType,
+          location: 'LGResponseEditor',
+        });
       },
       [calloutTargetElement, currentIndex, items, onChange]
     );

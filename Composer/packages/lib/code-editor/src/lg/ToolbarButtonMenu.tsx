@@ -93,13 +93,13 @@ type ToolbarButtonMenuProps = {
 
 const getIcon = (kind: ToolbarButtonPayload['kind']): JSX.Element => {
   switch (kind) {
-    case 'functionRef':
+    case 'function':
       return <Icon iconName="Variable" styles={iconStyles} />;
-    case 'propertyRef': {
+    case 'property': {
       const PropertyIcon = createSvgIcon({ svg: () => propertiesSvgIcon, displayName: 'PropertyIcon' });
       return <PropertyIcon style={svgIconStyle} />;
     }
-    case 'templateRef': {
+    case 'template': {
       const TemplateIcon = createSvgIcon({ svg: () => templateSvgIcon, displayName: 'TemplateIcon' });
       return <TemplateIcon style={svgIconStyle} />;
     }
@@ -108,19 +108,19 @@ const getIcon = (kind: ToolbarButtonPayload['kind']): JSX.Element => {
 
 const getStrings = (kind: ToolbarButtonPayload['kind']) => {
   switch (kind) {
-    case 'functionRef':
+    case 'function':
       return {
         emptyMessage: formatMessage('No functions found'),
         searchPlaceholder: formatMessage('Search functions'),
         header: formatMessage('Insert prebuilt functions'),
       };
-    case 'propertyRef':
+    case 'property':
       return {
         emptyMessage: formatMessage('No properties found'),
         searchPlaceholder: formatMessage('Search properties'),
         header: formatMessage('Insert property reference'),
       };
-    case 'templateRef':
+    case 'template':
       return {
         emptyMessage: formatMessage('No templates found'),
         searchPlaceholder: formatMessage('Search templates'),
@@ -144,16 +144,16 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
 
   const getContextualMenuItems = (): IContextualMenuItem[] => {
     switch (payload.kind) {
-      case 'templateRef': {
+      case 'template': {
         const { templates, onSelectTemplate } = (payload as TemplateRefPayload).data;
         return templates.map((t, i) => ({
           text: t.name,
           key: `${i}-${t.name}`,
           secondaryText: t.body,
-          onClick: () => onSelectTemplate(`${t.name}(${t.parameters.join(', ')})`),
+          onClick: () => onSelectTemplate(`${t.name}(${t.parameters.join(', ')})`, 'template'),
         })) as IContextualMenuItem[];
       }
-      case 'functionRef': {
+      case 'function': {
         const { functions, onSelectFunction } = (payload as FunctionRefPayload).data;
         return functions.map((grouping: { key: string; name: string; children: string[] }) => {
           return {
@@ -176,14 +176,14 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
                 return {
                   key: key,
                   text: key,
-                  onClick: () => onSelectFunction(getBuiltInFunctionInsertText(key)),
+                  onClick: () => onSelectFunction(getBuiltInFunctionInsertText(key), 'function'),
                 };
               }),
             },
           };
         });
       }
-      case 'propertyRef': {
+      case 'property': {
         const { properties, onSelectProperty } = (payload as PropertyRefPayload).data;
         const root = computePropertyItemTree(properties);
         const { nodes, levels, paths } = getAllNodes<PropertyItem>(root, {
@@ -205,7 +205,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
               onToggleExpand(node.id, !propertyTreeExpanded[node.id]);
             } else {
               const path = paths[node.id];
-              onSelectProperty(path);
+              onSelectProperty(path, 'property');
             }
           },
           data: {
@@ -220,7 +220,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
   };
 
   const flatFunctionListItems = React.useMemo(() => {
-    if (payload.kind === 'functionRef') {
+    if (payload.kind === 'function') {
       const { functions, onSelectFunction } = (payload as FunctionRefPayload).data;
       return functions
         .reduce((acc, f) => {
@@ -233,7 +233,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
         .map((key) => ({
           text: key,
           key,
-          onClick: () => onSelectFunction(getBuiltInFunctionInsertText(key)),
+          onClick: () => onSelectFunction(getBuiltInFunctionInsertText(key), 'function'),
         })) as IContextualMenuItem[];
     }
 
@@ -241,7 +241,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
   }, [payload]);
 
   const flatPropertyListItems = React.useMemo(() => {
-    if (payload.kind === 'propertyRef') {
+    if (payload.kind === 'property') {
       const { properties, onSelectProperty } = (payload as PropertyRefPayload).data;
 
       const root = computePropertyItemTree(properties);
@@ -253,7 +253,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
         secondaryText: paths[node.id],
         onClick: () => {
           const path = paths[node.id];
-          onSelectProperty(path);
+          onSelectProperty(path, 'property');
         },
         data: {
           node,
@@ -282,10 +282,10 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
 
   const getFilterPredictable = React.useCallback((kind: ToolbarButtonPayload['kind'], q: string) => {
     switch (kind) {
-      case 'functionRef':
-      case 'templateRef':
+      case 'function':
+      case 'template':
         return (item: IContextualMenuItem) => item.text && item.text.toLowerCase().indexOf(q.toLowerCase()) !== -1;
-      case 'propertyRef':
+      case 'property':
         return (item: IContextualMenuItem) =>
           item.data.node.children.length === 0 && item.secondaryText?.toLowerCase().indexOf(q.toLowerCase()) !== -1;
     }
@@ -294,9 +294,9 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
   React.useEffect(() => {
     if (debouncedQuery) {
       const searchableItems =
-        payload.kind === 'functionRef'
+        payload.kind === 'function'
           ? flatFunctionListItems
-          : payload.kind === 'propertyRef'
+          : payload.kind === 'property'
           ? flatPropertyListItems
           : menuItems;
 
@@ -357,7 +357,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
 
   const menuProps: IContextualMenuProps = React.useMemo(() => {
     switch (payload.kind) {
-      case 'templateRef': {
+      case 'template': {
         return {
           onDismiss,
           items,
@@ -368,7 +368,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
           },
         } as IContextualMenuProps;
       }
-      case 'functionRef': {
+      case 'function': {
         return {
           onDismiss,
           items,
@@ -386,7 +386,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
           },
         } as IContextualMenuProps;
       }
-      case 'propertyRef': {
+      case 'property': {
         return {
           onDismiss,
           items,

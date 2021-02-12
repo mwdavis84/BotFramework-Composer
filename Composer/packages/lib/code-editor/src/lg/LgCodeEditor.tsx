@@ -23,6 +23,7 @@ import { createLanguageClient, createUrl, createWebSocket, sendRequestWithRetry 
 import { withTooltip } from '../utils/withTooltip';
 
 import { LgEditorToolbar as DefaultLgEditorToolbar } from './LgEditorToolbar';
+import { ToolbarButtonPayload } from './types';
 
 const placeholder = formatMessage(
   `> To learn more about the LG file format, read the documentation at
@@ -90,6 +91,7 @@ export const LgCodeEditor = (props: LgCodeEditorProps) => {
     onInit: onInitProp,
     memoryVariables,
     lgTemplates,
+    telemetryClient,
     onNavigateToLgPage,
     ...restProps
   } = props;
@@ -151,15 +153,20 @@ export const LgCodeEditor = (props: LgCodeEditorProps) => {
   };
 
   const selectToolbarMenuItem = React.useCallback(
-    (text: string) => {
+    (text: string, itemType: ToolbarButtonPayload['kind']) => {
       if (editor) {
         const edits = computeRequiredEdits(text, editor);
         if (edits?.length) {
           editor.executeEdits('toolbarMenu', edits);
         }
       }
+      telemetryClient.track('LGQuickInsertItem', {
+        itemType,
+        item: itemType === 'function' ? text : undefined,
+        location: 'LGCodeEditor',
+      });
     },
-    [editor]
+    [editor, telemetryClient]
   );
 
   const navigateToLgPage = React.useCallback(() => {

@@ -14,6 +14,7 @@ import { withTooltip } from '../utils/withTooltip';
 import { jsLgToolbarMenuClassName } from './constants';
 import { useLgEditorToolbarItems } from './hooks/useLgEditorToolbarItems';
 import { ToolbarButtonMenu } from './ToolbarButtonMenu';
+import { ToolbarButtonPayload } from './types';
 
 const menuHeight = 32;
 
@@ -64,7 +65,7 @@ const configureMenuProps = (props: IContextualMenuProps | undefined, className: 
 export type LgEditorToolbarProps = {
   lgTemplates?: readonly LgTemplate[];
   properties?: readonly string[];
-  onSelectToolbarMenuItem: (itemText: string) => void;
+  onSelectToolbarMenuItem: (itemText: string, itemType: ToolbarButtonPayload['kind']) => void;
   moreToolbarItems?: readonly ICommandBarItemProps[];
   className?: string;
 };
@@ -95,30 +96,30 @@ export const LgEditorToolbar = React.memo((props: LgEditorToolbarProps) => {
   const fixedItems: ICommandBarItemProps[] = React.useMemo(
     () => [
       {
-        key: 'templateRef',
+        key: 'template',
         disabled: !templateRefPayload?.data?.templates?.length,
         commandBarButtonAs: () => (
           <TooltipTemplateButton
-            key="templateRef"
+            key="template"
             disabled={!templateRefPayload?.data?.templates?.length}
             payload={templateRefPayload}
           />
         ),
       },
       {
-        key: 'propertyRef',
+        key: 'property',
         disabled: !propertyRefPayload?.data?.properties?.length,
         commandBarButtonAs: () => (
           <TooltipPropertyButton
-            key="propertyRef"
+            key="property"
             disabled={!propertyRefPayload?.data?.properties?.length}
             payload={propertyRefPayload}
           />
         ),
       },
       {
-        key: 'functionRef',
-        commandBarButtonAs: () => <TooltipFunctionButton key="functionRef" payload={functionRefPayload} />,
+        key: 'function',
+        commandBarButtonAs: () => <TooltipFunctionButton key="function" payload={functionRefPayload} />,
       },
     ],
     [
