@@ -51,7 +51,7 @@ const TextModalityEditor = React.memo(
           onUpdateResponseTemplate({ Text: { kind: 'Text', value: [], valueType: 'direct' } });
           onRemoveTemplate(id);
         } else if (newItems.length === 1 && lgOption?.templateId) {
-          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [newItems[0]], valueType: 'direct' } });
+          onUpdateResponseTemplate({ Text: { kind: 'Text', value: newItems, valueType: 'direct' } });
           onTemplateChange(id, '');
         } else {
           setTemplateId(id);

@@ -57,7 +57,7 @@ const SpeechModalityEditor = React.memo(
           onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: [], valueType: 'direct' } });
           onRemoveTemplate(id);
         } else if (newItems.length === 1 && lgOption?.templateId) {
-          onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: [newItems[0]], valueType: 'direct' } });
+          onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: newItems, valueType: 'direct' } });
           onTemplateChange(id, '');
         } else {
           setTemplateId(id);
