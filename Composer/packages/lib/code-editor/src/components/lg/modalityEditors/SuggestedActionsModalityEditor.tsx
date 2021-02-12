@@ -11,7 +11,7 @@ import { StringArrayEditor } from './StringArrayEditor';
 
 type Props = CommonModalityEditorProps & { response: SuggestedActionsStructuredResponseItem };
 
-const SuggestedActionsModalityEditor = React.memo(
+export const SuggestedActionsModalityEditor = React.memo(
   ({
     response,
     lgOption,
@@ -23,12 +23,12 @@ const SuggestedActionsModalityEditor = React.memo(
   }: Props) => {
     const [items, setItems] = React.useState<string[]>(response?.value || []);
 
-    const handleChange = React.useCallback(
+    const onChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
         onUpdateResponseTemplate({ SuggestedActions: { kind: 'SuggestedActions', value: newItems } });
       },
-      [setItems, onUpdateResponseTemplate]
+      [onUpdateResponseTemplate]
     );
 
     return (
@@ -46,11 +46,9 @@ const SuggestedActionsModalityEditor = React.memo(
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
-          onChange={handleChange}
+          onChange={onChange}
         />
       </ModalityEditorContainer>
     );
   }
 );
-
-export { SuggestedActionsModalityEditor };

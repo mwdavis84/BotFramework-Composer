@@ -20,7 +20,7 @@ type Props = CommonModalityEditorProps & {
   attachmentLayout?: AttachmentLayoutStructuredResponseItem['value'];
 };
 
-const AttachmentModalityEditor = React.memo(
+export const AttachmentModalityEditor = React.memo(
   ({
     response,
     lgOption,
@@ -99,5 +99,3 @@ const AttachmentModalityEditor = React.memo(
     );
   }
 );
-
-export { AttachmentModalityEditor };

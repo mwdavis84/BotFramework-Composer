@@ -1,0 +1,72 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import { LgTemplate } from '@bfc/shared';
+import React from 'react';
+
+import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
+import { LGOption } from '../../../utils/types';
+import { PartialStructuredResponse, SpeechStructuredResponseItem, TextStructuredResponseItem } from '../types';
+
+type ArrayBasedStructuredResponseItem = TextStructuredResponseItem | SpeechStructuredResponseItem;
+
+const getInitialTemplateId = <T extends ArrayBasedStructuredResponseItem>(response: T): string | undefined => {
+  if (response?.value[0]) {
+    return extractTemplateNameFromExpression(response.value[0]);
+  }
+};
+
+const getInitialItems = <T extends ArrayBasedStructuredResponseItem>(
+  response: T,
+  lgTemplates?: readonly LgTemplate[]
+): string[] => {
+  const templateId = getInitialTemplateId(response);
+  const template = lgTemplates?.find(({ name }) => name === templateId);
+  return response?.value && template?.body
+    ? template?.body?.replace(/- /g, '').split(/\r?\n/g) || []
+    : response?.value || [];
+};
+
+export const useStringArray = <T extends ArrayBasedStructuredResponseItem>(
+  kind: 'Text' | 'Speak',
+  structuredResponse: T,
+  callbacks: {
+    onRemoveTemplate: (templateId: string) => void;
+    onTemplateChange: (templateId: string, body?: string) => void;
+    onUpdateResponseTemplate: (response: PartialStructuredResponse) => void;
+  },
+  options?: {
+    lgOption?: LGOption;
+    lgTemplates?: readonly LgTemplate[];
+  }
+) => {
+  const newTemplateNameSuffix = React.useMemo(() => kind.toLowerCase(), [kind]);
+
+  const { onRemoveTemplate, onTemplateChange, onUpdateResponseTemplate } = callbacks;
+  const { lgOption, lgTemplates } = options || {};
+
+  const [templateId, setTemplateId] = React.useState(getInitialTemplateId(structuredResponse));
+  const [items, setItems] = React.useState<string[]>(getInitialItems(structuredResponse, lgTemplates));
+
+  const onChange = React.useCallback(
+    (newItems: string[]) => {
+      setItems(newItems);
+      const id = templateId || `${lgOption?.templateId}_${newTemplateNameSuffix}`;
+      if (!newItems.length) {
+        setTemplateId(id);
+        onUpdateResponseTemplate({ [kind]: { kind, value: [], valueType: 'direct' } });
+        onRemoveTemplate(id);
+      } else if (newItems.length === 1 && lgOption?.templateId) {
+        onUpdateResponseTemplate({ [kind]: { kind, value: [newItems[0]], valueType: 'direct' } });
+        onTemplateChange(id, '');
+      } else {
+        setTemplateId(id);
+        onUpdateResponseTemplate({ [kind]: { kind, value: [`\${${id}()}`], valueType: 'template' } });
+        onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
+      }
+    },
+    [kind, newTemplateNameSuffix, lgOption, templateId, onRemoveTemplate, onTemplateChange, onUpdateResponseTemplate]
+  );
+
+  return { items, onChange };
+};

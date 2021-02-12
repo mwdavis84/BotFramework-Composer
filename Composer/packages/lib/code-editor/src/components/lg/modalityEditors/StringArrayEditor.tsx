@@ -59,13 +59,14 @@ type StringArrayEditorProps = {
   onChange: (items: string[]) => void;
 };
 
-const StringArrayEditor = React.memo(
+export const StringArrayEditor = React.memo(
   ({ items, lgTemplates, memoryVariables, isSpeech = false, onChange }: StringArrayEditorProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
+
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
     const [calloutTargetElement, setCalloutTargetElement] = useState<HTMLInputElement | null>(null);
 
-    const handleChange = useCallback(
+    const onItemChange = useCallback(
       (index: number) => (_, newValue?: string) => {
         const updatedItems = [...items];
         updatedItems[index] = newValue ?? '';
@@ -74,28 +75,27 @@ const StringArrayEditor = React.memo(
       [items, onChange]
     );
 
-    const handleFocus = useCallback(
+    const onItemFocus = useCallback(
       (index: number) => () => {
         setCurrentIndex(index);
       },
-      [setCurrentIndex]
+      []
     );
 
-    const handleRemove = useCallback(
+    const onItemRemove = useCallback(
       (index: number) => () => {
-        const newItems = items.slice();
-        newItems.splice(index, 1);
+        const newItems = items.filter((_, idx) => idx !== index);
         onChange(newItems);
       },
       [items, onChange]
     );
 
-    const handleClickAddVariation = useCallback(() => {
+    const onClickAddVariation = useCallback(() => {
       onChange([...items, '']);
       setCurrentIndex(items.length);
-    }, [items, setCurrentIndex, onChange]);
+    }, [items, onChange]);
 
-    const handleShowCallout = useCallback((targetElement: HTMLInputElement) => {
+    const onShowCallout = useCallback((targetElement: HTMLInputElement) => {
       setCalloutTargetElement(targetElement);
     }, []);
 
@@ -104,7 +104,7 @@ const StringArrayEditor = React.memo(
         if (submitKeys.includes(e.key)) {
           setCalloutTargetElement(null);
           setCurrentIndex(null);
-          // Remove empty variations
+          // Remove empty variations only if necessary
           if (items.some((item) => !item)) {
             onChange(items.filter(Boolean));
           }
@@ -125,7 +125,7 @@ const StringArrayEditor = React.memo(
         ) {
           setCalloutTargetElement(null);
           setCurrentIndex(null);
-          // Remove empty variations
+          // Remove empty variations only if necessary
           if (items.some((item) => !item)) {
             onChange(items.filter(Boolean));
           }
@@ -141,7 +141,7 @@ const StringArrayEditor = React.memo(
       };
     }, [items, onChange]);
 
-    const selectToolbarMenuItem = React.useCallback(
+    const onSelectToolbarMenuItem = React.useCallback(
       (text: string) => {
         if (typeof currentIndex === 'number' && currentIndex < items.length) {
           const updatedItems = [...items];
@@ -172,7 +172,7 @@ const StringArrayEditor = React.memo(
       [calloutTargetElement, currentIndex, items, onChange]
     );
 
-    const insertSSMLTag = React.useCallback(
+    const onInsertSSMLTag = React.useCallback(
       (ssmlTagType: SSMLTagType) => {
         if (typeof currentIndex === 'number' && currentIndex < items.length) {
           const updatedItems = [...items];
@@ -229,35 +229,35 @@ const StringArrayEditor = React.memo(
             key="lg-speech-toolbar"
             lgTemplates={lgTemplates}
             properties={memoryVariables}
-            onInsertSSMLTag={insertSSMLTag}
-            onSelectToolbarMenuItem={selectToolbarMenuItem}
+            onInsertSSMLTag={onInsertSSMLTag}
+            onSelectToolbarMenuItem={onSelectToolbarMenuItem}
           />
         ) : (
           <LgEditorToolbar
             key="lg-toolbar"
             lgTemplates={lgTemplates}
             properties={memoryVariables}
-            onSelectToolbarMenuItem={selectToolbarMenuItem}
+            onSelectToolbarMenuItem={onSelectToolbarMenuItem}
           />
         ),
-      [isSpeech, lgTemplates, memoryVariables, insertSSMLTag, selectToolbarMenuItem]
+      [isSpeech, lgTemplates, memoryVariables, onInsertSSMLTag, onSelectToolbarMenuItem]
     );
 
     return (
       <div ref={containerRef}>
-        {items.map((value, key) => (
+        {items.map((value, idx) => (
           <StringArrayItem
-            key={key}
-            mode={key === currentIndex ? 'edit' : 'view'}
+            key={`item-${idx}`}
+            mode={idx === currentIndex ? 'edit' : 'view'}
             value={value}
-            onChange={handleChange(key)}
-            onFocus={handleFocus(key)}
-            onRemove={handleRemove(key)}
-            onShowCallout={handleShowCallout}
+            onChange={onItemChange(idx)}
+            onFocus={onItemFocus(idx)}
+            onRemove={onItemRemove(idx)}
+            onShowCallout={onShowCallout}
           />
         ))}
         {currentIndex === null && (
-          <Link as="button" styles={styles.link} onClick={handleClickAddVariation}>
+          <Link as="button" styles={styles.link} onClick={onClickAddVariation}>
             {formatMessage('Add new variation')}
           </Link>
         )}
@@ -275,5 +275,3 @@ const StringArrayEditor = React.memo(
     );
   }
 );
-
-export { StringArrayEditor };

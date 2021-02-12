@@ -38,6 +38,8 @@ import {
   modalityType,
 } from './types';
 
+const menuItemStyle = { fontSize: FluentTheme.fonts.small.fontSize };
+
 const modalityDocumentUrl =
   'https://docs.microsoft.com/en-us/azure/bot-service/language-generation/language-generation-structured-response-template?view=azure-bot-service-4.0';
 
@@ -164,11 +166,11 @@ export const ModalityPivot = React.memo((props: Props) => {
     onRemoveTemplate,
   } = props;
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const [structuredResponse, setStructuredResponse] = React.useState(initialStructuredResponse);
   const [modalities, setModalities] = useState<ModalityType[]>(getInitialModalities(structuredResponse));
   const [selectedModality, setSelectedModality] = useState<string>(modalities[0] as string);
-
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const renderMenuItemContent = React.useCallback(
     (itemProps: IContextualMenuItemProps, defaultRenders: IContextualMenuItemRenderFunctions) =>
@@ -206,25 +208,25 @@ export const ModalityPivot = React.memo((props: Props) => {
         key: 'Text',
         text: formatMessage('Text'),
         onRenderContent: renderMenuItemContent,
-        style: { fontSize: FluentTheme.fonts.small.fontSize },
+        style: menuItemStyle,
       },
       {
         key: 'Speak',
         text: formatMessage('Speech'),
         onRenderContent: renderMenuItemContent,
-        style: { fontSize: FluentTheme.fonts.small.fontSize },
+        style: menuItemStyle,
       },
       {
         key: 'Attachments',
         text: formatMessage('Attachments'),
         onRenderContent: renderMenuItemContent,
-        style: { fontSize: FluentTheme.fonts.small.fontSize },
+        style: menuItemStyle,
       },
       {
         key: 'SuggestedActions',
         text: formatMessage('Suggested Actions'),
         onRenderContent: renderMenuItemContent,
-        style: { fontSize: FluentTheme.fonts.small.fontSize },
+        style: menuItemStyle,
       },
     ],
     [renderMenuItemContent]
@@ -257,18 +259,15 @@ export const ModalityPivot = React.memo((props: Props) => {
         }
       }
     },
-    [modalities, setModalities, setSelectedModality, lgOption]
+    [lgOption, modalities, onTemplateChange]
   );
 
-  const onModalityAddMenuItemClick = useCallback(
-    (_, item?: IContextualMenuItem) => {
-      if (item?.key) {
-        setModalities((current) => [...current, item.key as ModalityType]);
-        setSelectedModality(item.key);
-      }
-    },
-    [setModalities]
-  );
+  const onModalityAddMenuItemClick = useCallback((_, item?: IContextualMenuItem) => {
+    if (item?.key) {
+      setModalities((current) => [...current, item.key as ModalityType]);
+      setSelectedModality(item.key);
+    }
+  }, []);
 
   const onPivotChange = useCallback((item?: PivotItem) => {
     if (item?.props.itemKey) {
@@ -287,11 +286,10 @@ export const ModalityPivot = React.memo((props: Props) => {
         setStructuredResponse(mergedResponse);
 
         const mappedResponse = structuredResponseToString(mergedResponse);
-
         onTemplateChange(lgOption.templateId, mappedResponse);
       }
     },
-    [lgOption, structuredResponse]
+    [lgOption, structuredResponse, onTemplateChange]
   );
 
   const onAttachmentLayoutChange = useCallback(

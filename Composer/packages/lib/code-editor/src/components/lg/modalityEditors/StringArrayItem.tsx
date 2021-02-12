@@ -60,8 +60,21 @@ const CodeEditor = styled(LgCodeEditor)({
 });
 
 const textViewContainerStyles = {
-  root: { height: 48, padding: '0 0 0 13px', userSelect: 'none', cursor: 'pointer' },
+  root: {
+    height: 48,
+    padding: '0 0 0 13px',
+    userSelect: 'none',
+    cursor: 'pointer',
+    overflowX: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
 };
+
+const displayTextStyles = {
+  root: { overflowX: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+};
+
 const textViewRootTokens = { childrenGap: 8 };
 
 const textFieldStyles = {
@@ -83,6 +96,7 @@ type Props = {
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   value: string;
+  onRenderDisplayText?: () => React.ReactNode;
   onBlur?: () => void;
   onRemove: () => void;
   onFocus: () => void;
@@ -91,9 +105,9 @@ type Props = {
   onShowCallout?: (target: HTMLInputElement) => void;
 };
 
-type TextViewItemProps = Pick<Props, 'value' | 'onRemove' | 'onFocus'>;
+type TextViewItemProps = Pick<Props, 'value' | 'onRemove' | 'onFocus' | 'onRenderDisplayText'>;
 
-const TextViewItem = React.memo(({ value, onRemove, onFocus }: TextViewItemProps) => {
+const TextViewItem = React.memo(({ value, onRemove, onFocus, onRenderDisplayText }: TextViewItemProps) => {
   const remove = useCallback(
     (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.stopPropagation();
@@ -103,7 +117,7 @@ const TextViewItem = React.memo(({ value, onRemove, onFocus }: TextViewItemProps
     [onRemove]
   );
 
-  const handleFocus = React.useCallback(
+  const focus = React.useCallback(
     (e: React.FocusEvent<HTMLDivElement>) => {
       e.stopPropagation();
       onFocus();
@@ -111,7 +125,7 @@ const TextViewItem = React.memo(({ value, onRemove, onFocus }: TextViewItemProps
     [onFocus]
   );
 
-  const handleClick = React.useCallback(
+  const click = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       e.stopPropagation();
       onFocus();
@@ -123,8 +137,10 @@ const TextViewItem = React.memo(({ value, onRemove, onFocus }: TextViewItemProps
 
   return (
     <TextViewItemRoot horizontal tokens={textViewRootTokens} verticalAlign="center">
-      <Stack grow styles={textViewContainerStyles} verticalAlign="center" onClick={handleClick} onFocus={handleFocus}>
-        <Text variant="small">{value}</Text>
+      <Stack grow styles={textViewContainerStyles} verticalAlign="center" onClick={click} onFocus={focus}>
+        <Text styles={displayTextStyles} variant="small">
+          {onRenderDisplayText?.() ?? value}
+        </Text>
       </Stack>
       <RemoveIcon className={removeIconClassName} iconProps={{ iconName: 'Trash' }} onClick={remove} />
     </TextViewItemRoot>
@@ -140,7 +156,7 @@ const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldI
     itemRef.current?.focus();
   }, []);
 
-  const handleFocus = React.useCallback(
+  const focus = React.useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       e.stopPropagation();
       onShowCallout?.(e.target as HTMLInputElement);
@@ -148,7 +164,7 @@ const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldI
     [onShowCallout]
   );
 
-  const handleClick = React.useCallback(
+  const click = React.useCallback(
     (e: React.MouseEvent<HTMLInputElement>) => {
       e.stopPropagation();
       onShowCallout?.(e.target as HTMLInputElement);
@@ -162,8 +178,8 @@ const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldI
       styles={textFieldStyles}
       value={value}
       onChange={onChange}
-      onClick={handleClick}
-      onFocus={handleFocus}
+      onClick={click}
+      onFocus={focus}
     />
   );
 });
@@ -175,6 +191,7 @@ export const StringArrayItem = (props: Props) => {
     lgTemplates,
     memoryVariables,
     mode,
+    onRenderDisplayText,
     onChange,
     onLgChange = () => {},
     onShowCallout,
@@ -183,7 +200,7 @@ export const StringArrayItem = (props: Props) => {
     value,
   } = props;
 
-  const handleEditorDidMount = React.useCallback(
+  const onEditorDidMount = React.useCallback(
     (_, editor) => {
       if (editorMode === 'editor') {
         editor?.focus();
@@ -199,7 +216,7 @@ export const StringArrayItem = (props: Props) => {
           <TextFieldItem value={value} onChange={onChange} onShowCallout={onShowCallout} />
         ) : (
           <CodeEditor
-            editorDidMount={handleEditorDidMount}
+            editorDidMount={onEditorDidMount}
             height={150}
             lgOption={lgOption}
             lgTemplates={lgTemplates}
@@ -209,7 +226,7 @@ export const StringArrayItem = (props: Props) => {
           />
         )
       ) : (
-        <TextViewItem value={value} onFocus={onFocus} onRemove={onRemove} />
+        <TextViewItem value={value} onFocus={onFocus} onRemove={onRemove} onRenderDisplayText={onRenderDisplayText} />
       )}
     </Root>
   );

@@ -70,7 +70,7 @@ type Props = {
   onDropdownChange?: (_: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => void;
 };
 
-const ModalityEditorContainer: React.FC<Props> = ({
+export const ModalityEditorContainer: React.FC<Props> = ({
   children,
   modalityType,
   contentDescription,
@@ -177,5 +177,3 @@ const ModalityEditorContainer: React.FC<Props> = ({
     </Root>
   );
 };
-
-export { ModalityEditorContainer };
