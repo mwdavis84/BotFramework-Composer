@@ -5,9 +5,24 @@ export const activityTemplateType = 'Activity';
 
 export const jsLgToolbarMenuClassName = 'js-lg-toolbar-menu';
 
-type AttachmentCard = 'hero' | 'thumbnail' | 'signin' | 'animation' | 'video' | 'audio'; // | 'adaptive' | 'url';
+type AttachmentCard = 'adaptive' | 'hero' | 'thumbnail' | 'signin' | 'animation' | 'video' | 'audio';
 
 export const cardTemplates: Record<AttachmentCard, string> = {
+  adaptive: `> To learn more Adaptive Cards format, read the documentation at
+> https://docs.microsoft.com/en-us/adaptive-cards/getting-started/bots
+- \`\`\`{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.0",
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Passengers",
+      "weight": "bolder",
+      "isSubtle": false
+    },
+  ]
+}\`\`\``,
   hero: `[HeroCard
   title =
   subtitle =

@@ -7,13 +7,15 @@ import { activityTemplateType } from '../lg/constants';
 
 import { getStructuredResponseFromTemplate } from './structuredResponse';
 
+const emptyLgRegex = /^(\s)*-(\s)*$/;
+
 /**
  * Validates an lg template to check if it includes an structured response.
  * @param lgTemplate LgTemplate to validate.
  */
 export const validateStructuredResponse = (lgTemplate: LgTemplate) => {
   // If empty template return true
-  if (!lgTemplate.body) {
+  if (!lgTemplate.body || emptyLgRegex.test(lgTemplate.body)) {
     return true;
   }
 
