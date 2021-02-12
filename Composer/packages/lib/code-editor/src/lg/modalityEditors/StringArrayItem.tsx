@@ -9,11 +9,11 @@ import { Text } from 'office-ui-fabric-react/lib/Text';
 import { IconButton } from 'office-ui-fabric-react/lib/Button';
 import React, { useCallback, useEffect, useRef } from 'react';
 import formatMessage from 'format-message';
-import { LgTemplate } from '@bfc/shared';
+import { CodeEditorSettings, LgTemplate, TelemetryClient } from '@bfc/shared';
 
-import { withTooltip } from '../../../utils/withTooltip';
+import { withTooltip } from '../../utils/withTooltip';
 import { LgCodeEditor } from '../LgCodeEditor';
-import { LGOption } from '../../../utils';
+import { LGOption } from '../../utils';
 
 const removeIconClassName = 'string-array-item-remove-icon';
 
@@ -55,7 +55,7 @@ const Input = styled(TextField)({
   },
 });
 
-const CodeEditor = styled(LgCodeEditor)({
+const StyledLgCodeEditor = styled(LgCodeEditor)({
   padding: '8px 0 8px 4px',
 });
 
@@ -96,6 +96,8 @@ type Props = {
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   value: string;
+  codeEditorSettings?: Partial<CodeEditorSettings>;
+  telemetryClient: TelemetryClient;
   onRenderDisplayText?: () => React.ReactNode;
   onBlur?: () => void;
   onRemove: () => void;
@@ -105,7 +107,7 @@ type Props = {
   onShowCallout?: (target: HTMLInputElement) => void;
 };
 
-type TextViewItemProps = Pick<Props, 'value' | 'onRemove' | 'onFocus' | 'onRenderDisplayText'>;
+type TextViewItemProps = Pick<Props, 'value' | 'onRemove' | 'onFocus' | 'onRenderDisplayText' | 'codeEditorSettings'>;
 
 const TextViewItem = React.memo(({ value, onRemove, onFocus, onRenderDisplayText }: TextViewItemProps) => {
   const remove = useCallback(
@@ -147,7 +149,7 @@ const TextViewItem = React.memo(({ value, onRemove, onFocus, onRenderDisplayText
   );
 });
 
-type TextFieldItemProps = Omit<Props, 'onRemove' | 'mode' | 'onFocus'>;
+type TextFieldItemProps = Omit<Props, 'onRemove' | 'mode' | 'onFocus' | 'telemetryClient'>;
 
 const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldItemProps) => {
   const itemRef = useRef<ITextField | null>(null);
@@ -198,6 +200,8 @@ export const StringArrayItem = (props: Props) => {
     onRemove,
     onFocus,
     value,
+    telemetryClient,
+    codeEditorSettings,
   } = props;
 
   const onEditorDidMount = React.useCallback(
@@ -215,12 +219,14 @@ export const StringArrayItem = (props: Props) => {
         editorMode === 'single' ? (
           <TextFieldItem value={value} onChange={onChange} onShowCallout={onShowCallout} />
         ) : (
-          <CodeEditor
+          <StyledLgCodeEditor
             editorDidMount={onEditorDidMount}
+            editorSettings={codeEditorSettings}
             height={150}
             lgOption={lgOption}
             lgTemplates={lgTemplates}
             memoryVariables={memoryVariables}
+            telemetryClient={telemetryClient}
             value={value}
             onChange={onLgChange}
           />

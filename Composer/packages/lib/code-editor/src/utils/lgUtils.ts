@@ -4,7 +4,7 @@
 import { generateDesignerId, LgTemplate } from '@bfc/shared';
 import uniq from 'lodash/uniq';
 
-import { LgLanguageContext, PropertyItem } from '../components/lg/types';
+import { LgLanguageContext, PropertyItem } from '../lg/types';
 
 type MonacoPosition = {
   lineNumber: number;

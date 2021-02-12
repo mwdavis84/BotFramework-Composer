@@ -60,6 +60,23 @@ const getInitialTemplate = (fieldName: string, formData?: string): string => {
   return lgText.startsWith('-') ? lgText : `- ${lgText}`;
 };
 
+const customEditorFontSettings = {
+  fontSize: '12px',
+};
+
+const getLgCodeEditorSettings = (
+  editorSettings?: Partial<CodeEditorSettings>
+): Partial<CodeEditorSettings> | undefined => {
+  const customEditorSettings: Partial<CodeEditorSettings> = { ...editorSettings } ?? {};
+  if (!customEditorSettings?.fontSettings) {
+    customEditorSettings.fontSettings = { fontFamily: 'Courier New', fontWeight: '500', ...customEditorFontSettings };
+  } else {
+    customEditorSettings.fontSettings = { ...customEditorSettings.fontSettings, ...customEditorFontSettings };
+  }
+
+  return customEditorSettings;
+};
+
 const LgField: React.FC<FieldProps<string>> = (props) => {
   const { label, id, description, value, name, uiOptions, required } = props;
   const { designerId, currentDialog, lgFiles, shellApi, projectId, locale, userSettings } = useShellApi();
@@ -80,6 +97,9 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
   const lgFile = relatedLgFile ?? lgFiles.find((f) => f.id === fallbackLgFileId);
   const lgFileId = lgFile?.id ?? fallbackLgFileId;
 
+  const editorSettings = React.useMemo(() => getLgCodeEditorSettings(userSettings.codeEditor), [
+    userSettings.codeEditor,
+  ]);
   const [memoryVariables, setMemoryVariables] = useState<string[] | undefined>();
 
   useEffect(() => {
@@ -278,7 +298,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
       <LgEditor
         hidePlaceholder
         diagnostics={diagnostics}
-        editorSettings={userSettings.codeEditor}
+        editorSettings={editorSettings}
         height={225}
         languageServer={{
           path: lspServerPath,
@@ -287,6 +307,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         lgTemplates={availableLgTemplates}
         memoryVariables={memoryVariables}
         mode={editorMode}
+        telemetryClient={shellApi.telemetryClient}
         value={template.body}
         onChange={onChange}
         onChangeSettings={handleSettingsChange}

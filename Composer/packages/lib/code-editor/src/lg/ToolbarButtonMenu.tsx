@@ -23,8 +23,8 @@ import { DirectionalHint } from 'office-ui-fabric-react/lib/Tooltip';
 import { IRenderFunction } from 'office-ui-fabric-react/lib/Utilities';
 import * as React from 'react';
 
-import { computePropertyItemTree, getAllNodes } from '../../utils/lgUtils';
-import { withTooltip } from '../../utils/withTooltip';
+import { computePropertyItemTree, getAllNodes } from '../utils/lgUtils';
+import { withTooltip } from '../utils/withTooltip';
 
 import { jsLgToolbarMenuClassName } from './constants';
 import { useDebounce } from './hooks/useDebounce';

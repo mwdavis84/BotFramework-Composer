@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@botframework-composer/types';
+import { CodeEditorSettings, LgTemplate, TelemetryClient } from '@bfc/shared';
 
 import { BaseEditorProps } from './BaseEditor';
 import { LGOption } from './utils/types';
@@ -13,14 +13,17 @@ type LgCommonEditorProps = {
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   lgOption?: LGOption;
-  onRemoveTemplate?: (templateId: string) => void;
-  onTemplateChange?: (templateId: string, body?: string) => void;
+  telemetryClient: TelemetryClient;
 };
 
 /**
  * LG Response editor props;
  */
-export type LgResponseEditorProps = LgCommonEditorProps;
+export type LgResponseEditorProps = LgCommonEditorProps & {
+  onRemoveTemplate: (templateId: string) => void;
+  onTemplateChange: (templateId: string, body?: string) => void;
+  editorSettings?: Partial<CodeEditorSettings>;
+};
 
 /**
  * LG code editor props.

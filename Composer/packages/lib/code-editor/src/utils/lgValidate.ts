@@ -3,7 +3,7 @@
 
 import { LgTemplate } from '@bfc/shared';
 
-import { activityTemplateType } from '../components/lg/constants';
+import { activityTemplateType } from '../lg/constants';
 
 import { getStructuredResponseFromTemplate } from './structuredResponse';
 

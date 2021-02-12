@@ -13,7 +13,7 @@ import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Text } from 'office-ui-fabric-react/lib/Text';
 import React from 'react';
 
-import { ItemWithTooltip } from '../../ItemWithTooltip';
+import { ItemWithTooltip } from '../../components/ItemWithTooltip';
 import { ModalityType } from '../types';
 
 import { ModalityEditorTitle } from './ModalityEditorTitle';

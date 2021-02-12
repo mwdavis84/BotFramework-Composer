@@ -9,7 +9,7 @@ import { VerticalDivider } from 'office-ui-fabric-react/lib/Divider';
 import { IContextualMenuProps } from 'office-ui-fabric-react/lib/ContextualMenu';
 import * as React from 'react';
 
-import { withTooltip } from '../../utils/withTooltip';
+import { withTooltip } from '../utils/withTooltip';
 
 import { jsLgToolbarMenuClassName } from './constants';
 import { useLgEditorToolbarItems } from './hooks/useLgEditorToolbarItems';

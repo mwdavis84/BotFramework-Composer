@@ -164,8 +164,8 @@
   "add_custom_runtime_6b73dc44": {
     "message": "Add custom runtime"
   },
-  "add_modality_to_this_response_8974cc43": {
-    "message": "Add modality to this response"
+  "add_more_to_this_response_d45bdfda": {
+    "message": "Add more to this response"
   },
   "add_multiple_comma_separated_synonyms_2639283f": {
     "message": "Add multiple comma-separated synonyms"
@@ -3080,11 +3080,11 @@
   "to_customize_the_welcome_message_select_the_i_send_9b4bf4f": {
     "message": "To customize the welcome message, select the <i>Send a response</i> action in the Visual Editor. Then in the Form Editor on the right, you can edit the bot''s welcome message in the <b>Language Generation</b> field."
   },
-  "to_learn_more_about_modalities_a_go_to_this_docume_797a8117": {
-    "message": "To learn more about modalities, <a>go to this document</a>."
+  "to_learn_more_a_visit_this_document_a_ce188d8": {
+    "message": "To learn more, <a>visit this document</a>."
   },
-  "to_learn_more_about_ssml_tags_a_go_to_this_documen_7df7b3ac": {
-    "message": "To learn more about SSML Tags, <a>go to this document</a>."
+  "to_learn_more_about_ssml_tags_a_visit_this_documen_533b3e8": {
+    "message": "To learn more about SSML Tags, <a>visit this document</a>."
   },
   "to_learn_more_about_the_lg_file_format_read_the_do_ef6e083d": {
     "message": "> To learn more about the LG file format, read the documentation at\n> { lgHelp }"

@@ -3,7 +3,7 @@
 
 import { LgTemplate } from '@bfc/shared';
 
-import { activityTemplateType } from '../components/lg/constants';
+import { activityTemplateType } from '../lg/constants';
 import {
   acceptedAttachmentLayout,
   acceptedInputHintValues,
@@ -15,7 +15,7 @@ import {
   StructuredResponseItem,
   SuggestedActionsStructuredResponseItem,
   TextStructuredResponseItem,
-} from '../components/lg/types';
+} from '../lg/types';
 
 const subTemplateNameRegex = /\${(.*)}/;
 const templateNameExtractRegex = /\${(.*)(\(.*\))\s*}/;

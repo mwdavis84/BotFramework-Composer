@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@bfc/shared';
+import { LgTemplate, TelemetryClient } from '@bfc/shared';
 import { FluentTheme } from '@uifabric/fluent-theme';
 import formatMessage from 'format-message';
 import { Callout, DirectionalHint } from 'office-ui-fabric-react/lib/Callout';
 import { ILinkStyles, Link } from 'office-ui-fabric-react/lib/Link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { LGOption } from '../../../utils';
-import { getCursorContextWithinLine } from '../../../utils/lgUtils';
+import { LGOption } from '../../utils';
+import { getCursorContextWithinLine } from '../../utils/lgUtils';
 import { jsLgToolbarMenuClassName } from '../constants';
 import { LgEditorToolbar } from '../LgEditorToolbar';
 import { LgSpeechModalityToolbar, SSMLTagType } from '../LgSpeechModalityToolbar';
@@ -57,10 +57,11 @@ type StringArrayEditorProps = {
   lgOption?: LGOption;
   isSpeech?: boolean;
   onChange: (items: string[]) => void;
+  telemetryClient: TelemetryClient;
 };
 
 export const StringArrayEditor = React.memo(
-  ({ items, lgTemplates, memoryVariables, isSpeech = false, onChange }: StringArrayEditorProps) => {
+  ({ items, lgTemplates, memoryVariables, isSpeech = false, telemetryClient, onChange }: StringArrayEditorProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
@@ -249,6 +250,7 @@ export const StringArrayEditor = React.memo(
           <StringArrayItem
             key={`item-${idx}`}
             mode={idx === currentIndex ? 'edit' : 'view'}
+            telemetryClient={telemetryClient}
             value={value}
             onChange={onItemChange(idx)}
             onFocus={onItemFocus(idx)}

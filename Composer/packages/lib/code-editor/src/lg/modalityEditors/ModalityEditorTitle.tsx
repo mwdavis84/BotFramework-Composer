@@ -5,7 +5,7 @@ import { FluentTheme } from '@uifabric/fluent-theme';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import React from 'react';
 
-import { ItemWithTooltip } from '../../ItemWithTooltip';
+import { ItemWithTooltip } from '../../components/ItemWithTooltip';
 import { ModalityType } from '../types';
 
 const labelStyles = { root: { fontSize: FluentTheme.fonts.small.fontSize } };

@@ -4,13 +4,14 @@
 import formatMessage from 'format-message';
 import React from 'react';
 import { IDropdownOption, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
+import { CodeEditorSettings } from '@bfc/shared';
 
 import {
   AttachmentsStructuredResponseItem,
   AttachmentLayoutStructuredResponseItem,
   CommonModalityEditorProps,
 } from '../types';
-import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
+import { extractTemplateNameFromExpression } from '../../utils/structuredResponse';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { AttachmentArrayEditor } from './AttachmentArrayEditor';
@@ -18,6 +19,7 @@ import { AttachmentArrayEditor } from './AttachmentArrayEditor';
 type Props = CommonModalityEditorProps & {
   response: AttachmentsStructuredResponseItem;
   attachmentLayout?: AttachmentLayoutStructuredResponseItem['value'];
+  editorSettings?: Partial<CodeEditorSettings>;
 };
 
 export const AttachmentModalityEditor = React.memo(
@@ -32,6 +34,8 @@ export const AttachmentModalityEditor = React.memo(
     onUpdateResponseTemplate,
     onRemoveModality,
     onTemplateChange,
+    telemetryClient,
+    editorSettings,
   }: Props) => {
     const [items, setItems] = React.useState<string[]>(
       response?.value.map((item) => extractTemplateNameFromExpression(item) || '').filter(Boolean) || []
@@ -87,11 +91,13 @@ export const AttachmentModalityEditor = React.memo(
         onRemoveModality={onRemoveModality}
       >
         <AttachmentArrayEditor
+          codeEditorSettings={editorSettings}
           items={items}
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
           selectedKey="text"
+          telemetryClient={telemetryClient}
           onChange={handleChange}
           onTemplateChange={onTemplateChange}
         />

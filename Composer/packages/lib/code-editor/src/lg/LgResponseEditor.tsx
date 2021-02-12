@@ -3,8 +3,8 @@
 
 import * as React from 'react';
 
-import { LgResponseEditorProps } from '../../types';
-import { getStructuredResponseFromTemplate } from '../../utils/structuredResponse';
+import { LgResponseEditorProps } from '../types';
+import { getStructuredResponseFromTemplate } from '../utils/structuredResponse';
 
 import { ModalityPivot } from './ModalityPivot';
 
@@ -13,6 +13,8 @@ export const LgResponseEditor = React.memo(
     lgOption,
     lgTemplates,
     memoryVariables,
+    telemetryClient,
+    editorSettings,
     onTemplateChange,
     onRemoveTemplate = () => {},
   }: LgResponseEditorProps) => {
@@ -20,10 +22,12 @@ export const LgResponseEditor = React.memo(
 
     return (
       <ModalityPivot
+        editorSettings={editorSettings}
         lgOption={lgOption}
         lgTemplates={lgTemplates}
         memoryVariables={memoryVariables}
         structuredResponse={structuredResponse}
+        telemetryClient={telemetryClient}
         onRemoveTemplate={onRemoveTemplate}
         onTemplateChange={onTemplateChange}
       />

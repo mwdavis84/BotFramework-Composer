@@ -20,6 +20,7 @@ export const SuggestedActionsModalityEditor = React.memo(
     removeModalityDisabled: disableRemoveModality,
     onRemoveModality,
     onUpdateResponseTemplate,
+    telemetryClient,
   }: Props) => {
     const [items, setItems] = React.useState<string[]>(response?.value || []);
 
@@ -46,6 +47,7 @@ export const SuggestedActionsModalityEditor = React.memo(
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
+          telemetryClient={telemetryClient}
           onChange={onChange}
         />
       </ModalityEditorContainer>

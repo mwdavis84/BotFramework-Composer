@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@bfc/shared';
+import { LgTemplate, TelemetryClient } from '@bfc/shared';
 
-import { LGOption } from '../../utils';
+import { LGOption } from '../utils';
 
 export type TemplateRefPayload = {
   kind: 'templateRef';
@@ -47,6 +47,7 @@ export type CommonModalityEditorProps = {
   lgOption?: LGOption;
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
+  telemetryClient: TelemetryClient;
   onAttachmentLayoutChange?: (layout: string) => void;
   onInputHintChange?: (inputHint: string) => void;
   onTemplateChange: (templateId: string, body?: string) => void;

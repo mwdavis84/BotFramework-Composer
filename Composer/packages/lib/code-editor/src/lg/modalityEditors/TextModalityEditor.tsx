@@ -23,6 +23,7 @@ export const TextModalityEditor = React.memo(
     onRemoveModality,
     onRemoveTemplate,
     onUpdateResponseTemplate,
+    telemetryClient,
   }: Props) => {
     const { items, onChange } = useStringArray<TextStructuredResponseItem>(
       'Text',
@@ -52,6 +53,7 @@ export const TextModalityEditor = React.memo(
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
+          telemetryClient={telemetryClient}
           onChange={onChange}
         />
       </ModalityEditorContainer>

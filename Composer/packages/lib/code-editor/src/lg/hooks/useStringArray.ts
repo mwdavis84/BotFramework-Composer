@@ -4,8 +4,8 @@
 import { LgTemplate } from '@bfc/shared';
 import React from 'react';
 
-import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
-import { LGOption } from '../../../utils/types';
+import { extractTemplateNameFromExpression } from '../../utils/structuredResponse';
+import { LGOption } from '../../utils/types';
 import { PartialStructuredResponse, SpeechStructuredResponseItem, TextStructuredResponseItem } from '../types';
 
 type ArrayBasedStructuredResponseItem = TextStructuredResponseItem | SpeechStructuredResponseItem;

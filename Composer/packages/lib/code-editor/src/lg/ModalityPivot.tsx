@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@bfc/shared';
+import { CodeEditorSettings, LgTemplate, TelemetryClient } from '@bfc/shared';
 import { FluentTheme, FontSizes } from '@uifabric/fluent-theme';
 import formatMessage from 'format-message';
 import { IconButton } from 'office-ui-fabric-react/lib/Button';
@@ -18,9 +18,9 @@ import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import mergeWith from 'lodash/mergeWith';
 
-import { LGOption } from '../../utils';
-import { ItemWithTooltip } from '../ItemWithTooltip';
-import { structuredResponseToString } from '../../utils/structuredResponse';
+import { LGOption } from '../utils';
+import { ItemWithTooltip } from '../components/ItemWithTooltip';
+import { structuredResponseToString } from '../utils/structuredResponse';
 
 import { AttachmentModalityEditor } from './modalityEditors/AttachmentModalityEditor';
 import { SpeechModalityEditor } from './modalityEditors/SpeechModalityEditor';
@@ -78,6 +78,8 @@ const renderModalityEditor = ({
   lgOption,
   lgTemplates,
   memoryVariables,
+  telemetryClient,
+  editorSettings,
   onRemoveModality,
   onTemplateChange,
   onAttachmentLayoutChange,
@@ -91,6 +93,8 @@ const renderModalityEditor = ({
   lgOption?: LGOption;
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
+  telemetryClient: TelemetryClient;
+  editorSettings?: Partial<CodeEditorSettings>;
   onRemoveModality: (modality: ModalityType) => void;
   onTemplateChange: (templateId: string, body?: string) => void;
   onAttachmentLayoutChange: (layout: string) => void;
@@ -103,6 +107,7 @@ const renderModalityEditor = ({
     lgTemplates,
     memoryVariables,
     removeModalityDisabled,
+    telemetryClient,
     onTemplateChange,
     onUpdateResponseTemplate,
     onRemoveModality,
@@ -115,6 +120,7 @@ const renderModalityEditor = ({
         <AttachmentModalityEditor
           {...commonProps}
           attachmentLayout={(structuredResponse?.AttachmentLayout as AttachmentLayoutStructuredResponseItem)?.value}
+          editorSettings={editorSettings}
           response={structuredResponse?.Attachments as AttachmentsStructuredResponseItem}
           onAttachmentLayoutChange={onAttachmentLayoutChange}
         />
@@ -152,7 +158,9 @@ type Props = {
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   structuredResponse?: PartialStructuredResponse;
-  onTemplateChange?: (templateId: string, body?: string) => void;
+  telemetryClient: TelemetryClient;
+  editorSettings?: Partial<CodeEditorSettings>;
+  onTemplateChange: (templateId: string, body?: string) => void;
   onRemoveTemplate: (templateId: string) => void;
 };
 
@@ -162,7 +170,9 @@ export const ModalityPivot = React.memo((props: Props) => {
     lgTemplates,
     memoryVariables,
     structuredResponse: initialStructuredResponse,
-    onTemplateChange = () => {},
+    telemetryClient,
+    editorSettings,
+    onTemplateChange,
     onRemoveTemplate,
   } = props;
 
@@ -178,7 +188,7 @@ export const ModalityPivot = React.memo((props: Props) => {
         <ItemWithTooltip
           itemText={defaultRenders.renderItemName(itemProps)}
           tooltipId="modality-add-menu-header"
-          tooltipText={formatMessage.rich('To learn more about modalities, <a>go to this document</a>.', {
+          tooltipText={formatMessage.rich('To learn more, <a>visit this document</a>.', {
             a: ({ children }) => (
               <Link key="modality-add-menu-header-link" href={modalityDocumentUrl} target="_blank">
                 {children}
@@ -201,7 +211,7 @@ export const ModalityPivot = React.memo((props: Props) => {
       {
         key: 'header',
         itemType: ContextualMenuItemType.Header,
-        text: formatMessage('Add modality to this response'),
+        text: formatMessage('Add more to this response'),
         onRenderContent: renderMenuItemContent,
       },
       {
@@ -342,6 +352,8 @@ export const ModalityPivot = React.memo((props: Props) => {
           lgOption,
           lgTemplates,
           memoryVariables,
+          telemetryClient,
+          editorSettings,
           onRemoveModality,
           onRemoveTemplate,
           onTemplateChange,

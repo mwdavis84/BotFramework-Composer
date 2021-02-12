@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-import { LgTemplate } from '@bfc/shared';
+import { CodeEditorSettings, LgTemplate, TelemetryClient } from '@bfc/shared';
 import formatMessage from 'format-message';
 import { CommandButton, IButtonStyles } from 'office-ui-fabric-react/lib/Button';
 import { FluentTheme } from '@uifabric/fluent-theme';
@@ -14,9 +14,9 @@ import { Text } from 'office-ui-fabric-react/lib/Text';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import React from 'react';
 
-import { LGOption } from '../../../utils';
+import { LGOption } from '../../utils';
 import { cardTemplates, jsLgToolbarMenuClassName } from '../constants';
-import { getUniqueTemplateName } from '../../../utils/lgUtils';
+import { getUniqueTemplateName } from '../../utils/lgUtils';
 
 import { StringArrayItem } from './StringArrayItem';
 
@@ -45,10 +45,21 @@ type AttachmentArrayEditorProps = {
   lgOption?: LGOption;
   onChange: (items: string[]) => void;
   onTemplateChange: (templateId: string, body?: string) => void;
+  telemetryClient: TelemetryClient;
+  codeEditorSettings?: Partial<CodeEditorSettings>;
 };
 
 export const AttachmentArrayEditor = React.memo(
-  ({ items, lgOption, lgTemplates, memoryVariables, onChange, onTemplateChange }: AttachmentArrayEditorProps) => {
+  ({
+    items,
+    lgOption,
+    lgTemplates,
+    memoryVariables,
+    onChange,
+    onTemplateChange,
+    telemetryClient,
+    codeEditorSettings,
+  }: AttachmentArrayEditorProps) => {
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const [currentIndex, setCurrentIndex] = React.useState<number | null>(null);
 
@@ -239,11 +250,13 @@ export const AttachmentArrayEditor = React.memo(
         {templates.map(({ name, body }, idx) => (
           <StringArrayItem
             key={`item-${idx}`}
+            codeEditorSettings={codeEditorSettings}
             editorMode="editor"
             lgOption={lgOption}
             lgTemplates={lgTemplates}
             memoryVariables={memoryVariables}
             mode={idx === currentIndex ? 'edit' : 'view'}
+            telemetryClient={telemetryClient}
             value={body}
             onFocus={onFocus(idx)}
             onLgChange={onLgCodeChange(name)}

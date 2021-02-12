@@ -3,7 +3,7 @@
 
 /* eslint-disable react/display-name */
 /** @jsx jsx */
-import { EditorDidMount, LgEditor } from '@bfc/code-editor';
+import { EditorDidMount, LgCodeEditor } from '@bfc/code-editor';
 import { LgFile } from '@bfc/extension-client';
 import { filterTemplateDiagnostics } from '@bfc/indexers';
 import { CodeEditorSettings } from '@bfc/shared';
@@ -19,6 +19,7 @@ import { dispatcherState, userSettingsState } from '../../recoilModel';
 import { localeState, settingsState } from '../../recoilModel/atoms/botState';
 import { getMemoryVariables } from '../../recoilModel/dispatchers/utils/project';
 import { lgFilesSelectorFamily } from '../../recoilModel/selectors/lg';
+import TelemetryClient from '../../telemetry/TelemetryClient';
 import { DiffCodeEditor } from '../language-understanding/diff-editor';
 
 const lspServerPath = '/lg-language-server';
@@ -178,7 +179,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
   const currentLanguageFileEditor = useMemo(() => {
     return (
-      <LgEditor
+      <LgCodeEditor
         diagnostics={currentDiagnostics}
         editorDidMount={editorDidMount}
         editorSettings={userSettings.codeEditor}
@@ -190,26 +191,26 @@ const CodeEditor: React.FC<CodeEditorProps> = (props) => {
         lgOption={lgOption}
         lgTemplates={file?.allTemplates}
         memoryVariables={memoryVariables}
-        mode="codeEditor"
+        telemetryClient={TelemetryClient}
         value={content}
         onChange={onChange}
         onChangeSettings={handleSettingsChange}
       />
     );
-  }, [lgOption]);
+  }, [lgOption, userSettings.codeEditor]);
 
   const defaultLanguageFileEditor = (
-    <LgEditor
+    <LgCodeEditor
       editorSettings={userSettings.codeEditor}
       lgOption={{
         fileId: dialogId,
       }}
       lgTemplates={file?.allTemplates}
       memoryVariables={memoryVariables}
-      mode="codeEditor"
       options={{
         readOnly: true,
       }}
+      telemetryClient={TelemetryClient}
       value={defaultLangContent}
       onChange={() => {}}
     />

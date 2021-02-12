@@ -11,7 +11,7 @@ import {
 import { Link } from 'office-ui-fabric-react/lib/Link';
 import * as React from 'react';
 
-import { ItemWithTooltip } from '../ItemWithTooltip';
+import { ItemWithTooltip } from '../components/ItemWithTooltip';
 
 import { jsLgToolbarMenuClassName } from './constants';
 import { LgEditorToolbar, LgEditorToolbarProps } from './LgEditorToolbar';
@@ -39,7 +39,7 @@ export const LgSpeechModalityToolbar = React.memo((props: Props) => {
         itemText={defaultRenders.renderItemName(itemProps)}
         tooltipId="ssml-menu-header"
         tooltipProps={ssmlHeaderTooltipProps}
-        tooltipText={formatMessage.rich('To learn more about SSML Tags, <a>go to this document</a>.', {
+        tooltipText={formatMessage.rich('To learn more about SSML Tags, <a>visit this document</a>.', {
           a: ({ children }) => (
             <Link key="ssml-menu-header-link" href={ssmlHeaderHelpUrl} target="_blank">
               {children}

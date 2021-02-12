@@ -29,6 +29,7 @@ export const SpeechModalityEditor = React.memo(
     onRemoveModality,
     onRemoveTemplate,
     onUpdateResponseTemplate,
+    telemetryClient,
   }: Props) => {
     const { items, onChange } = useStringArray<SpeechStructuredResponseItem>(
       'Speak',
@@ -95,6 +96,7 @@ export const SpeechModalityEditor = React.memo(
           lgOption={lgOption}
           lgTemplates={lgTemplates}
           memoryVariables={memoryVariables}
+          telemetryClient={telemetryClient}
           onChange={onChange}
         />
       </ModalityEditorContainer>
