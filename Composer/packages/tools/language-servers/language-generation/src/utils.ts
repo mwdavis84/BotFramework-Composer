@@ -150,3 +150,10 @@ export const cardPropDict = {
   Activity: ['Text', 'Speak', 'Attachments', 'SuggestedActions', 'InputHint', 'AttachmentLayout'],
   Others: ['type', 'name', 'value'],
 };
+
+export function getLineByIndex(document: TextDocument, line: number) {
+  const lineCount = document.lineCount;
+  if (line >= lineCount || line < 0) return null;
+
+  return document.getText().split(/\r?\n/g)[line];
+}

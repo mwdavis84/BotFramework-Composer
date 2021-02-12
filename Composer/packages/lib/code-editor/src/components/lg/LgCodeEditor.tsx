@@ -79,6 +79,7 @@ export const LgCodeEditor = (props: LgCodeEditorProps) => {
   const options = {
     quickSuggestions: true,
     wordBasedSuggestions: false,
+    folding: true,
     ...props.options,
   };
 

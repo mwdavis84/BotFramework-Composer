@@ -161,7 +161,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     }
   };
 
-  const handleSettingsChange = (settings: Partial<CodeEditorSettings>) => {
+  const handleSettingsChange = (settings: CodeEditorSettings) => {
     shellApi.updateUserSettings({ codeEditor: settings });
   };
 
