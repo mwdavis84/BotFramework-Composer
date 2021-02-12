@@ -238,6 +238,13 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     [designerId, lgFileId, lgName, shellApi, lgOption, props.onChange]
   );
 
+  const handleRemoveTemplate = React.useCallback(
+    (template: string) => {
+      handleTemplateChange(template);
+    },
+    [handleTemplateChange]
+  );
+
   return (
     <React.Fragment>
       <Stack horizontal horizontalAlign="space-between" styles={{ root: { marginBottom: 4 } }} verticalAlign="center">
@@ -283,6 +290,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         onChange={onChange}
         onChangeSettings={handleSettingsChange}
         onNavigateToLgPage={navigateToLgPage}
+        onRemoveTemplate={handleRemoveTemplate}
         onTemplateChange={handleTemplateChange}
       />
     </React.Fragment>

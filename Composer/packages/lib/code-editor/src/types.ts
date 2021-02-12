@@ -13,6 +13,7 @@ type LgCommonEditorProps = {
   lgTemplates?: readonly LgTemplate[];
   memoryVariables?: readonly string[];
   lgOption?: LGOption;
+  onRemoveTemplate?: (templateId: string) => void;
   onTemplateChange?: (templateId: string, body?: string) => void;
 };
 

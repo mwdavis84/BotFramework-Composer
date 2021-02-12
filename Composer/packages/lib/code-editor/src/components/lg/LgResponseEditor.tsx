@@ -9,7 +9,13 @@ import { getStructuredResponseFromTemplate } from '../../utils/structuredRespons
 import { ModalityPivot } from './ModalityPivot';
 
 export const LgResponseEditor = React.memo(
-  ({ lgOption, lgTemplates, memoryVariables, onTemplateChange }: LgResponseEditorProps) => {
+  ({
+    lgOption,
+    lgTemplates,
+    memoryVariables,
+    onTemplateChange,
+    onRemoveTemplate = () => {},
+  }: LgResponseEditorProps) => {
     const structuredResponse = getStructuredResponseFromTemplate(lgOption?.template);
 
     return (
@@ -18,6 +24,7 @@ export const LgResponseEditor = React.memo(
         lgTemplates={lgTemplates}
         memoryVariables={memoryVariables}
         structuredResponse={structuredResponse}
+        onRemoveTemplate={onRemoveTemplate}
         onTemplateChange={onTemplateChange}
       />
     );

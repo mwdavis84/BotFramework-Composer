@@ -3,7 +3,7 @@
 
 import { LgTemplate } from '@bfc/shared';
 import formatMessage from 'format-message';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 
 import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
 import { CommonModalityEditorProps, TextStructuredResponseItem } from '../types';
@@ -12,8 +12,8 @@ import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
 
 const getInitialTemplateId = (response: TextStructuredResponseItem): string | undefined => {
-  if (response?.value) {
-    return extractTemplateNameFromExpression(Array.isArray(response.value) ? response.value[0] : response.value);
+  if (response?.value[0]) {
+    return extractTemplateNameFromExpression(response.value[0]);
   }
 };
 
@@ -36,18 +36,24 @@ const TextModalityEditor = React.memo(
     memoryVariables,
     onTemplateChange,
     onRemoveModality,
+    onRemoveTemplate,
     onUpdateResponseTemplate,
   }: Props) => {
     const [templateId, setTemplateId] = React.useState(getInitialTemplateId(response));
-    const [items, setItems] = useState<string[]>(getInitialItems(response, lgTemplates));
+    const [items, setItems] = React.useState<string[]>(getInitialItems(response, lgTemplates));
 
-    const handleChange = useCallback(
+    const handleChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
-        if (newItems.length === 1 && lgOption?.templateId) {
+        const id = templateId || `${lgOption?.templateId}_text`;
+        if (!newItems.length) {
+          setTemplateId(id);
+          onUpdateResponseTemplate({ Text: { kind: 'Text', value: [], valueType: 'direct' } });
+          onRemoveTemplate(id);
+        } else if (newItems.length === 1 && lgOption?.templateId) {
           onUpdateResponseTemplate({ Text: { kind: 'Text', value: [newItems[0]], valueType: 'direct' } });
+          onTemplateChange(id, '');
         } else {
-          const id = templateId || `${lgOption?.templateId}_text`;
           setTemplateId(id);
           onUpdateResponseTemplate({ Text: { kind: 'Text', value: [`\${${id}()}`], valueType: 'template' } });
           onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));

@@ -39,7 +39,7 @@ export type LgLanguageContext =
   | 'templateName'
   | 'root';
 
-export type PartialStructuredResponse = Partial<Record<StructuredResponseItem['kind'], StructuredResponseItem>>;
+export type PartialStructuredResponse = Partial<Record<StructuredResponseItem['kind'], StructuredResponseItem | null>>;
 
 export type CommonModalityEditorProps = {
   response?: PartialStructuredResponse;
@@ -51,6 +51,7 @@ export type CommonModalityEditorProps = {
   onInputHintChange?: (inputHint: string) => void;
   onTemplateChange: (templateId: string, body?: string) => void;
   onRemoveModality: (modality: ModalityType) => void;
+  onRemoveTemplate: (templateId: string) => void;
   onUpdateResponseTemplate: (response: PartialStructuredResponse) => void;
 };
 

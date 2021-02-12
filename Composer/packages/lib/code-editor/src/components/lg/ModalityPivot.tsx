@@ -81,6 +81,7 @@ const renderModalityEditor = ({
   onAttachmentLayoutChange,
   onInputHintChange,
   onUpdateResponseTemplate,
+  onRemoveTemplate,
 }: {
   modality: string;
   removeModalityDisabled: boolean;
@@ -93,6 +94,7 @@ const renderModalityEditor = ({
   onAttachmentLayoutChange: (layout: string) => void;
   onInputHintChange: (inputHintString: string) => void;
   onUpdateResponseTemplate: (response: PartialStructuredResponse) => void;
+  onRemoveTemplate: (templateId: string) => void;
 }) => {
   const commonProps = {
     lgOption,
@@ -102,6 +104,7 @@ const renderModalityEditor = ({
     onTemplateChange,
     onUpdateResponseTemplate,
     onRemoveModality,
+    onRemoveTemplate,
   };
 
   switch (modality) {
@@ -148,6 +151,7 @@ type Props = {
   memoryVariables?: readonly string[];
   structuredResponse?: PartialStructuredResponse;
   onTemplateChange?: (templateId: string, body?: string) => void;
+  onRemoveTemplate: (templateId: string) => void;
 };
 
 export const ModalityPivot = React.memo((props: Props) => {
@@ -157,6 +161,7 @@ export const ModalityPivot = React.memo((props: Props) => {
     memoryVariables,
     structuredResponse: initialStructuredResponse,
     onTemplateChange = () => {},
+    onRemoveTemplate,
   } = props;
 
   const [structuredResponse, setStructuredResponse] = React.useState(initialStructuredResponse);
@@ -302,10 +307,10 @@ export const ModalityPivot = React.memo((props: Props) => {
   const onInputHintChange = useCallback(
     (inputHint: string) => {
       onUpdateResponseTemplate({
-        InputHint:
-          inputHint !== 'none'
-            ? ({ kind: 'InputHint', value: inputHint } as InputHintStructuredResponseItem)
-            : undefined,
+        InputHint: {
+          kind: 'InputHint',
+          value: inputHint !== 'none' ? inputHint : '',
+        } as InputHintStructuredResponseItem,
       });
     },
     [onUpdateResponseTemplate]
@@ -341,6 +346,7 @@ export const ModalityPivot = React.memo((props: Props) => {
           lgTemplates,
           memoryVariables,
           onRemoveModality,
+          onRemoveTemplate,
           onTemplateChange,
           onAttachmentLayoutChange,
           onInputHintChange,

@@ -1,14 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { LgTemplate } from '@bfc/shared';
 import formatMessage from 'format-message';
 import { IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 import React from 'react';
 
+import { extractTemplateNameFromExpression } from '../../../utils/structuredResponse';
 import { CommonModalityEditorProps, InputHintStructuredResponseItem, SpeechStructuredResponseItem } from '../types';
 
 import { ModalityEditorContainer } from './ModalityEditorContainer';
 import { StringArrayEditor } from './StringArrayEditor';
+
+const getInitialTemplateId = (response: SpeechStructuredResponseItem): string | undefined => {
+  if (response?.value[0]) {
+    return extractTemplateNameFromExpression(response.value[0]);
+  }
+};
+
+const getInitialItems = (response: SpeechStructuredResponseItem, lgTemplates?: readonly LgTemplate[]): string[] => {
+  const templateId = getInitialTemplateId(response);
+  const template = lgTemplates?.find(({ name }) => name === templateId);
+  return response?.value && template?.body
+    ? template?.body?.replace(/- /g, '').split('\n') || []
+    : response?.value || [];
+};
 
 type Props = CommonModalityEditorProps & {
   response: SpeechStructuredResponseItem;
@@ -17,6 +33,7 @@ type Props = CommonModalityEditorProps & {
 
 const SpeechModalityEditor = React.memo(
   ({
+    response,
     removeModalityDisabled: disableRemoveModality,
     lgOption,
     lgTemplates,
@@ -25,16 +42,30 @@ const SpeechModalityEditor = React.memo(
     onInputHintChange,
     onTemplateChange,
     onRemoveModality,
+    onRemoveTemplate,
+    onUpdateResponseTemplate,
   }: Props) => {
-    const [items, setItems] = React.useState<string[]>([]);
-    const [templateId] = React.useState<string>(`${lgOption?.templateId}_speech}`);
+    const [templateId, setTemplateId] = React.useState(getInitialTemplateId(response));
+    const [items, setItems] = React.useState<string[]>(getInitialItems(response, lgTemplates));
 
     const handleChange = React.useCallback(
       (newItems: string[]) => {
         setItems(newItems);
-        onTemplateChange(templateId, newItems.map((item) => `- ${item}`).join('\n'));
+        const id = templateId || `${lgOption?.templateId}_speech`;
+        if (!newItems.length) {
+          setTemplateId(id);
+          onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: [], valueType: 'direct' } });
+          onRemoveTemplate(id);
+        } else if (newItems.length === 1 && lgOption?.templateId) {
+          onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: [newItems[0]], valueType: 'direct' } });
+          onTemplateChange(id, '');
+        } else {
+          setTemplateId(id);
+          onUpdateResponseTemplate({ Speak: { kind: 'Speak', value: [`\${${id}()}`], valueType: 'template' } });
+          onTemplateChange(id, newItems.map((item) => `- ${item}`).join('\n'));
+        }
       },
-      [setItems, templateId, onTemplateChange]
+      [lgOption, setItems, templateId, onTemplateChange, onUpdateResponseTemplate]
     );
 
     const inputHintOptions = React.useMemo<IDropdownOption[]>(

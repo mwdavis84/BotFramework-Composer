@@ -1460,6 +1460,9 @@
   "importing_bot_content_from_targetname_6da78f15": {
     "message": "Importing bot content from { targetName }..."
   },
+  "in_order_to_use_the_response_editor_please_fix_you_570408e8": {
+    "message": "In order to use the response editor, please fix your template errors first."
+  },
   "in_production_5a70b8b4": {
     "message": "In production"
   },
