@@ -13,6 +13,7 @@ import {
 import { Text } from 'office-ui-fabric-react/lib/Text';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import React from 'react';
+import debounce from 'lodash/debounce';
 
 import { LGOption } from '../../utils';
 import { cardTemplates, jsLgToolbarMenuClassName } from '../constants';
@@ -63,11 +64,18 @@ export const AttachmentArrayEditor = React.memo(
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const [currentIndex, setCurrentIndex] = React.useState<number | null>(null);
 
+    const debouncedChange = React.useCallback(
+      debounce((id: string, content: string | undefined, callback: (templateId: string, body?: string) => void) => {
+        callback(id, content);
+      }, 300),
+      []
+    );
+
     const onLgCodeChange = React.useCallback(
       (templateId: string) => (body?: string) => {
-        onTemplateChange(templateId, body);
+        debouncedChange(templateId, body, onTemplateChange);
       },
-      [onTemplateChange]
+      [debouncedChange, onTemplateChange]
     );
 
     const onFocus = React.useCallback(
