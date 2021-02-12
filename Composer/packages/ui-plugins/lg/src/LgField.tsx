@@ -81,16 +81,17 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
   const lgFileId = lgFile?.id ?? fallbackLgFileId;
 
   const [memoryVariables, setMemoryVariables] = useState<string[] | undefined>();
+
   useEffect(() => {
     const abortController = new AbortController();
-    (async () => {
+    (async (currentProjectId: string) => {
       try {
-        const variables = await shellApi.getMemoryVariables(projectId, { signal: abortController.signal });
+        const variables = await shellApi.getMemoryVariables(currentProjectId, { signal: abortController.signal });
         setMemoryVariables(variables);
       } catch (e) {
         // error can be due to abort
       }
-    })();
+    })(projectId);
 
     // clean up pending async request
     () => {

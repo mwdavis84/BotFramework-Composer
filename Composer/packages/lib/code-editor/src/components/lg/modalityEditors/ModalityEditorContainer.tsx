@@ -1,21 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { OpenConfirmModal } from '@bfc/ui-shared';
 import styled from '@emotion/styled';
 import { FluentTheme } from '@uifabric/fluent-theme';
-import { NeutralColors } from '@uifabric/fluent-theme/lib/fluent/FluentColors';
 import formatMessage from 'format-message';
 import { CommandBarButton } from 'office-ui-fabric-react/lib/Button';
 import { IContextualMenuItem } from 'office-ui-fabric-react/lib/ContextualMenu';
-import { Dropdown, IDropdownOption, DropdownMenuItemType } from 'office-ui-fabric-react/lib/Dropdown';
+import { Dropdown, DropdownMenuItemType, IDropdownOption } from 'office-ui-fabric-react/lib/Dropdown';
 import { OverflowSet } from 'office-ui-fabric-react/lib/OverflowSet';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Text } from 'office-ui-fabric-react/lib/Text';
-import { OpenConfirmModal } from '@bfc/ui-shared';
 import React from 'react';
 
-import { ModalityType } from '../types';
 import { ItemWithTooltip } from '../../ItemWithTooltip';
+import { ModalityType } from '../types';
 
 import { ModalityEditorTitle } from './ModalityEditorTitle';
 
@@ -24,10 +23,12 @@ const Root = styled.div({
 });
 
 const HeaderContainer = styled.div({
-  borderBottom: `1px solid ${NeutralColors.gray30}`,
+  borderBottom: `1px solid ${FluentTheme.palette.neutralLight}`,
   padding: '8px 0 4px 4px',
   width: '100%',
 });
+
+const headerContentStyles = { root: { height: 32 } };
 
 const styles = {
   dropdown: {
@@ -146,7 +147,7 @@ export const ModalityEditorContainer: React.FC<Props> = ({
   return (
     <Root>
       <HeaderContainer>
-        <Stack horizontal horizontalAlign="space-between">
+        <Stack horizontal horizontalAlign="space-between" styles={headerContentStyles} verticalAlign="center">
           <ModalityEditorTitle
             helpMessage={contentDescription ?? ''}
             modalityType={modalityType}

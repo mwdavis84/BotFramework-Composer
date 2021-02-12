@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+import { CodeEditorSettings } from '@bfc/shared';
 import styled from '@emotion/styled';
 import { EditorDidMount } from '@monaco-editor/react';
 import { FluentTheme, NeutralColors } from '@uifabric/fluent-theme';
@@ -23,6 +24,10 @@ import { createLanguageClient, createUrl, createWebSocket, sendRequestWithRetry 
 import { withTooltip } from '../../utils/withTooltip';
 
 import { LgEditorToolbar as DefaultLgEditorToolbar } from './LgEditorToolbar';
+
+const customEditorFontSettings = {
+  fontSize: '13px',
+};
 
 const placeholder = formatMessage(
   `> To learn more about the LG file format, read the documentation at
@@ -91,8 +96,17 @@ export const LgCodeEditor = (props: LgCodeEditorProps) => {
     memoryVariables,
     lgTemplates,
     onNavigateToLgPage,
+    editorSettings,
     ...restProps
   } = props;
+
+  const customEditorSettings: Partial<CodeEditorSettings> = editorSettings ?? {};
+  if (!customEditorSettings?.fontSettings) {
+    customEditorSettings.fontSettings = { fontFamily: 'Courier New', fontWeight: '500', ...customEditorFontSettings };
+  } else {
+    customEditorSettings.fontSettings = { ...customEditorSettings.fontSettings, ...customEditorFontSettings };
+  }
+
   const lgServer = languageServer || defaultLGServer;
 
   let editorId = '';
@@ -175,6 +189,7 @@ export const LgCodeEditor = (props: LgCodeEditorProps) => {
         />
       )}
       <BaseEditor
+        editorSettings={customEditorSettings}
         helpURL={LG_HELP}
         id={editorId}
         placeholder={placeholder}
