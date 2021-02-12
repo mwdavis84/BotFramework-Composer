@@ -6,8 +6,11 @@ import { LgTemplate, TelemetryClient } from '@bfc/shared';
 import { LGOption } from '../utils';
 
 export type TemplateRefPayload = {
-  kind: 'templateRef';
-  data: { templates: readonly LgTemplate[]; onSelectTemplate: (templateString: string) => void };
+  kind: 'template';
+  data: {
+    templates: readonly LgTemplate[];
+    onSelectTemplate: (templateString: string, itemType: 'template') => void;
+  };
 };
 
 export type PropertyItem = {
@@ -16,15 +19,15 @@ export type PropertyItem = {
 };
 
 export type PropertyRefPayload = {
-  kind: 'propertyRef';
-  data: { properties: readonly string[]; onSelectProperty: (property: string) => void };
+  kind: 'property';
+  data: { properties: readonly string[]; onSelectProperty: (property: string, itemType: 'property') => void };
 };
 
 export type FunctionRefPayload = {
-  kind: 'functionRef';
+  kind: 'function';
   data: {
     functions: readonly { key: string; name: string; children: string[] }[];
-    onSelectFunction: (functionString: string) => void;
+    onSelectFunction: (functionString: string, itemType: 'function') => void;
   };
 };
 

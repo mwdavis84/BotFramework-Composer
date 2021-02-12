@@ -267,17 +267,22 @@ export const ModalityPivot = React.memo((props: Props) => {
           const mappedResponse = structuredResponseToString(mergedResponse);
           onTemplateChange(lgOption.templateId, mappedResponse);
         }
+        telemetryClient.track('LGEditorModalityDeleted', { modality });
       }
     },
-    [lgOption, modalities, onTemplateChange]
+    [lgOption, modalities, telemetryClient, onTemplateChange]
   );
 
-  const onModalityAddMenuItemClick = useCallback((_, item?: IContextualMenuItem) => {
-    if (item?.key) {
-      setModalities((current) => [...current, item.key as ModalityType]);
-      setSelectedModality(item.key);
-    }
-  }, []);
+  const onModalityAddMenuItemClick = useCallback(
+    (_, item?: IContextualMenuItem) => {
+      if (item?.key) {
+        setModalities((current) => [...current, item.key as ModalityType]);
+        setSelectedModality(item.key);
+        telemetryClient.track('LGEditorModalityAdded', { modality: item.key });
+      }
+    },
+    [telemetryClient]
+  );
 
   const onPivotChange = useCallback((item?: PivotItem) => {
     if (item?.props.itemKey) {
