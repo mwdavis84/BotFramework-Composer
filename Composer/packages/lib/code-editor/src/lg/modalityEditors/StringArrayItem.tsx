@@ -153,9 +153,14 @@ type TextFieldItemProps = Omit<Props, 'onRemove' | 'mode' | 'onFocus' | 'telemet
 
 const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldItemProps) => {
   const itemRef = useRef<ITextField | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     itemRef.current?.focus();
+    if (containerRef.current) {
+      inputRef.current = containerRef.current.querySelector('input');
+    }
   }, []);
 
   const focus = React.useCallback(
@@ -174,15 +179,28 @@ const TextFieldItem = React.memo(({ value, onShowCallout, onChange }: TextFieldI
     [onShowCallout]
   );
 
+  React.useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== value) {
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+      if (nativeInputValueSetter) {
+        nativeInputValueSetter.call(inputRef.current, value);
+        const inputEvent = new Event('input', { bubbles: true });
+        inputRef.current.dispatchEvent(inputEvent);
+      }
+    }
+  }, [value]);
+
   return (
-    <Input
-      componentRef={(ref) => (itemRef.current = ref)}
-      defaultValue={value}
-      styles={textFieldStyles}
-      onChange={onChange}
-      onClick={click}
-      onFocus={focus}
-    />
+    <div ref={containerRef}>
+      <Input
+        componentRef={(ref) => (itemRef.current = ref)}
+        defaultValue={value}
+        styles={textFieldStyles}
+        onChange={onChange}
+        onClick={click}
+        onFocus={focus}
+      />
+    </div>
   );
 });
 
