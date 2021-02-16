@@ -32,12 +32,12 @@ const styles: { link: ILinkStyles } = {
   },
 };
 
-const prosodyDefaultProps = ['pitch', 'rate', 'volume'];
-const breakDefaultProps = ['time', 'strength'];
-const audioDefaultProps = ['src'];
+const prosodyDefaultProps = { pitch: 'medium', rate: 'medium', volume: 'medium' };
+const breakDefaultProps = { strength: 'medium' };
+const audioDefaultProps = { src: 'url' };
 
 const getSSMLProps = (tag: 'prosody' | 'audio' | 'break'): string => {
-  let defaultProps: string[] = [];
+  let defaultProps: Record<string, string> = {};
   switch (tag) {
     case 'prosody':
       defaultProps = prosodyDefaultProps;
@@ -49,7 +49,9 @@ const getSSMLProps = (tag: 'prosody' | 'audio' | 'break'): string => {
       defaultProps = breakDefaultProps;
   }
 
-  return defaultProps.map((prop) => `${prop}=""`).join(' ');
+  return Object.entries(defaultProps)
+    .map(([key, value]) => `${key}="${value}"`)
+    .join(' ');
 };
 
 type StringArrayEditorProps = {
