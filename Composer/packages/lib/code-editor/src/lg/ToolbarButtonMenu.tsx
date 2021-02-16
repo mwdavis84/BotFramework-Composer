@@ -62,22 +62,30 @@ const headerContainerStyles = {
   root: { height: 32 },
 };
 
+const fontSizeStyle = {
+  fontSize: FluentTheme.fonts.small.fontSize,
+};
+
 const Header = styled(Label)({
   padding: '0 8px',
   color: FluentTheme.palette.accent,
-  fontSize: FluentTheme.fonts.small.fontSize,
+  ...fontSizeStyle,
 });
 
 const OneLiner = styled.div({
+  ...fontSizeStyle,
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   padding: '0 8px',
 });
 
+const searchEmptyMessageStyles = { root: { height: 32 } };
+const searchEmptyMessageTokens = { childrenGap: 8 };
+
 const svgIconStyle = { fill: NeutralColors.black, margin: '0 4px', width: 16, height: 16 };
 const iconStyles = { root: { color: NeutralColors.black, margin: '0 4px', width: 16, height: 16 } };
-const searchFieldStyles = { root: { borderRadius: 0 }, iconContainer: { display: 'none' } };
+const searchFieldStyles = { root: { borderRadius: 0, ...fontSizeStyle }, iconContainer: { display: 'none' } };
 const calloutProps = {
   styles: {
     calloutMain: { overflowY: 'hidden' },
@@ -159,6 +167,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
           return {
             key: grouping.key,
             text: grouping.name,
+            style: fontSizeStyle,
             subMenuProps: {
               calloutProps: {
                 calloutMaxHeight: 432,
@@ -312,12 +321,12 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
               key="no_results"
               horizontal
               horizontalAlign="center"
-              styles={{ root: { height: 32 } }}
-              tokens={{ childrenGap: 8 }}
+              styles={searchEmptyMessageStyles}
+              tokens={searchEmptyMessageTokens}
               verticalAlign="center"
             >
               <Icon iconName="SearchIssue" title={uiStrings.emptyMessage} />
-              <span>{uiStrings.emptyMessage}</span>
+              <Text variant="small">{uiStrings.emptyMessage}</Text>
             </Stack>
           ),
         });
@@ -406,14 +415,17 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
               const pathNodes = (path ?? '').split('.');
               return (
                 <Stack horizontal styles={labelContainerStyle} verticalAlign="center">
-                  {pathNodes.map((pn, idx) => (
+                  {pathNodes.map((pathNode, idx) => (
                     <Text
                       key={`segment-${idx}`}
                       styles={{
-                        root: { color: idx === pathNodes.length - 1 ? NeutralColors.black : NeutralColors.gray70 },
+                        root: {
+                          color: idx === pathNodes.length - 1 ? NeutralColors.black : NeutralColors.gray70,
+                        },
                       }}
+                      variant="small"
                     >
-                      {`${pn}${idx === pathNodes.length - 1 && node.children.length === 0 ? '' : '.'}`}
+                      {`${pathNode}${idx === pathNodes.length - 1 && node.children.length === 0 ? '' : '.'}`}
                     </Text>
                   ))}
                 </Stack>
@@ -422,7 +434,7 @@ export const ToolbarButtonMenu = React.memo((props: ToolbarButtonMenuProps) => {
 
             const renderSearchResultLabel = () => (
               <Stack styles={labelContainerStyle} verticalAlign="center">
-                <Text>{path}</Text>
+                <Text variant="small">{path}</Text>
               </Stack>
             );
 
