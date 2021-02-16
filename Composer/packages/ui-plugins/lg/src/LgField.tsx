@@ -14,7 +14,7 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import { Stack } from 'office-ui-fabric-react/lib/Stack';
 import { Text } from 'office-ui-fabric-react/lib/Text';
 import { TooltipHost } from 'office-ui-fabric-react/lib/Tooltip';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 
 import { locateLgTemplatePosition } from './locateLgTemplatePosition';
 
@@ -97,9 +97,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
   const lgFile = relatedLgFile ?? lgFiles.find((f) => f.id === fallbackLgFileId);
   const lgFileId = lgFile?.id ?? fallbackLgFileId;
 
-  const editorSettings = React.useMemo(() => getLgCodeEditorSettings(userSettings.codeEditor), [
-    userSettings.codeEditor,
-  ]);
+  const editorSettings = useMemo(() => getLgCodeEditorSettings(userSettings.codeEditor), [userSettings.codeEditor]);
   const [memoryVariables, setMemoryVariables] = useState<string[] | undefined>();
 
   useEffect(() => {
@@ -119,19 +117,12 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     };
   }, [projectId]);
 
-  const availableLgTemplates = React.useMemo(
+  const availableLgTemplates = useMemo(
     () =>
       (lgFiles.find((lgFile) => lgFile.id === lgFileId)?.allTemplates || [])
         .filter((t) => t.name !== lgTemplateRef?.name)
         .sort(),
     [lgFileId, lgFiles]
-  );
-
-  const updateLgTemplate = useCallback(
-    async (body: string) => {
-      await shellApi.debouncedUpdateLgTemplate(lgFileId, lgName, body);
-    },
-    [lgName, lgFileId]
   );
 
   const template = lgFile?.templates?.find((template) => {
@@ -144,12 +135,11 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
 
   const diagnostics = lgFile ? filterTemplateDiagnostics(lgFile, template.name) : [];
 
-  const responseEditorLinkDisabled = React.useMemo(
-    () => diagnostics.some((d) => d.severity === DiagnosticSeverity.Error),
-    [diagnostics]
-  );
+  const responseEditorLinkDisabled = useMemo(() => diagnostics.some((d) => d.severity === DiagnosticSeverity.Error), [
+    diagnostics,
+  ]);
 
-  const allowResponseEditor = React.useMemo(() => !responseEditorLinkDisabled && validateStructuredResponse(template), [
+  const allowResponseEditor = useMemo(() => !responseEditorLinkDisabled && validateStructuredResponse(template), [
     template,
     responseEditorLinkDisabled,
   ]);
@@ -165,28 +155,31 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     template,
   };
 
-  const onChange = (body: string) => {
-    if (designerId) {
-      if (body) {
-        updateLgTemplate(body).then(() => {
-          if (lgTemplateRef) {
-            shellApi.commitChanges();
-          }
-        });
-        props.onChange(new LgTemplateRef(lgName).toString());
-      } else {
-        shellApi.removeLgTemplate(lgFileId, lgName).then(() => {
-          props.onChange();
-        });
+  const onChange = useCallback(
+    (body: string) => {
+      if (designerId) {
+        if (body) {
+          shellApi.debouncedUpdateLgTemplate(lgFileId, lgName, body).then(() => {
+            if (lgTemplateRef) {
+              shellApi.commitChanges();
+            }
+          });
+          props.onChange(new LgTemplateRef(lgName).toString());
+        } else {
+          shellApi.removeLgTemplate(lgFileId, lgName).then(() => {
+            props.onChange();
+          });
+        }
       }
-    }
-  };
+    },
+    [designerId, shellApi, lgFileId, lgName, lgTemplateRef, props.onChange]
+  );
 
   const handleSettingsChange = (settings: CodeEditorSettings) => {
     shellApi.updateUserSettings({ codeEditor: settings });
   };
 
-  const renderConfirmDialogContent = React.useCallback(
+  const renderConfirmDialogContent = useCallback(
     (text: React.ReactNode) => (
       <Stack styles={confirmDialogContentStyles} tokens={confirmDialogContentTokens}>
         {text}
@@ -195,7 +188,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     []
   );
 
-  const modeChange = React.useCallback(async () => {
+  const modeChange = useCallback(async () => {
     if (editorMode === 'codeEditor' && !allowResponseEditor) {
       const confirm = await OpenConfirmModal(
         formatMessage('Warning'),
@@ -223,7 +216,8 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
 
       if (confirm) {
         await shellApi.debouncedUpdateLgTemplate(lgFileId, lgOption.templateId, '');
-        props.onChange('');
+        shellApi.commitChanges();
+        props.onChange(new LgTemplateRef(lgOption.templateId).toString());
         setEditorMode('responseEditor');
         shellApi.telemetryClient.track('LGEditorSwitchToResponseEditor');
       }
@@ -236,7 +230,7 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     setEditorMode(editorMode === 'codeEditor' ? 'responseEditor' : 'codeEditor');
   }, [editorMode, allowResponseEditor, props.onChange, shellApi.telemetryClient]);
 
-  const navigateToLgPage = React.useCallback(
+  const navigateToLgPage = useCallback(
     (lgFileId: string) => {
       // eslint-disable-next-line security/detect-non-literal-regexp
       const pattern = new RegExp(`.${locale}`, 'g');
@@ -246,28 +240,28 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
     [shellApi, projectId, locale]
   );
 
-  const handleTemplateChange = React.useCallback(
+  const onTemplateChange = useCallback(
     async (templateId: string, body?: string) => {
-      if (designerId) {
-        if (body) {
-          await shellApi.debouncedUpdateLgTemplate(lgFileId, templateId, body);
-        } else {
-          await shellApi.removeLgTemplate(lgFileId, templateId);
-        }
-
+      if (body) {
+        await shellApi.debouncedUpdateLgTemplate(lgFileId, templateId, body);
         if (templateId === lgOption.templateId) {
-          props.onChange(body);
+          props.onChange(new LgTemplateRef(templateId).toString());
+        }
+      } else {
+        await shellApi.removeLgTemplate(lgFileId, templateId);
+        if (templateId === lgOption.templateId) {
+          props.onChange();
         }
       }
     },
-    [designerId, lgFileId, lgName, shellApi, lgOption, props.onChange]
+    [lgOption, shellApi, props.onChange]
   );
 
-  const handleRemoveTemplate = React.useCallback(
+  const onRemoveTemplate = useCallback(
     (template: string) => {
-      handleTemplateChange(template);
+      onTemplateChange(template);
     },
-    [handleTemplateChange]
+    [onTemplateChange]
   );
 
   return (
@@ -316,8 +310,8 @@ const LgField: React.FC<FieldProps<string>> = (props) => {
         onChange={onChange}
         onChangeSettings={handleSettingsChange}
         onNavigateToLgPage={navigateToLgPage}
-        onRemoveTemplate={handleRemoveTemplate}
-        onTemplateChange={handleTemplateChange}
+        onRemoveTemplate={onRemoveTemplate}
+        onTemplateChange={onTemplateChange}
       />
     </React.Fragment>
   );

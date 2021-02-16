@@ -19,6 +19,7 @@ import {
 
 const subTemplateNameRegex = /\${(.*)}/;
 const templateNameExtractRegex = /\${(.*)(\(.*\))\s*}/;
+const defaultIndent = '    ';
 
 const getStructuredResponseHelper = (value: unknown, kind: 'Text' | 'Speak' | 'Attachments') => {
   if (typeof value === 'string') {
@@ -166,5 +167,5 @@ export const structuredResponseToString = (structuredResponse: PartialStructured
     return text;
   }, '');
 
-  return `[${activityTemplateType}\n${body}]`;
+  return `[${activityTemplateType}\n${body}]\n`.replace(/\t/gm, defaultIndent);
 };
