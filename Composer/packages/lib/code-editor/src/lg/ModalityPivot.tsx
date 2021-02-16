@@ -20,7 +20,7 @@ import mergeWith from 'lodash/mergeWith';
 
 import { LGOption } from '../utils';
 import { ItemWithTooltip } from '../components/ItemWithTooltip';
-import { structuredResponseToString } from '../utils/structuredResponse';
+import { getTemplateId, structuredResponseToString } from '../utils/structuredResponse';
 
 import { AttachmentModalityEditor } from './modalityEditors/AttachmentModalityEditor';
 import { SpeechModalityEditor } from './modalityEditors/SpeechModalityEditor';
@@ -36,6 +36,7 @@ import {
   AttachmentLayoutStructuredResponseItem,
   InputHintStructuredResponseItem,
   modalityType,
+  ArrayBasedStructuredResponseItem,
 } from './types';
 
 const menuItemStyle = { fontSize: FluentTheme.fonts.small.fontSize };
@@ -266,11 +267,19 @@ export const ModalityPivot = React.memo((props: Props) => {
           setStructuredResponse(mergedResponse);
           const mappedResponse = structuredResponseToString(mergedResponse);
           onTemplateChange(lgOption.templateId, mappedResponse);
+
+          if (['Text', 'Speak'].includes(modality)) {
+            const templateId = getTemplateId(structuredResponse?.[modality] as ArrayBasedStructuredResponseItem);
+
+            if (templateId) {
+              onRemoveTemplate(templateId);
+            }
+          }
         }
         telemetryClient.track('LGEditorModalityDeleted', { modality });
       }
     },
-    [lgOption, modalities, telemetryClient, onTemplateChange]
+    [lgOption, modalities, structuredResponse, telemetryClient, onRemoveTemplate, onTemplateChange]
   );
 
   const onModalityAddMenuItemClick = useCallback(

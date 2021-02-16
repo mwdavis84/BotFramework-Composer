@@ -4,23 +4,15 @@
 import { LgTemplate } from '@bfc/shared';
 import React from 'react';
 
-import { extractTemplateNameFromExpression } from '../../utils/structuredResponse';
+import { ArrayBasedStructuredResponseItem, PartialStructuredResponse } from '../types';
+import { getTemplateId } from '../../utils/structuredResponse';
 import { LGOption } from '../../utils/types';
-import { PartialStructuredResponse, SpeechStructuredResponseItem, TextStructuredResponseItem } from '../types';
-
-type ArrayBasedStructuredResponseItem = TextStructuredResponseItem | SpeechStructuredResponseItem;
-
-const getInitialTemplateId = <T extends ArrayBasedStructuredResponseItem>(response: T): string | undefined => {
-  if (response?.value[0]) {
-    return extractTemplateNameFromExpression(response.value[0]);
-  }
-};
 
 const getInitialItems = <T extends ArrayBasedStructuredResponseItem>(
   response: T,
   lgTemplates?: readonly LgTemplate[]
 ): string[] => {
-  const templateId = getInitialTemplateId(response);
+  const templateId = getTemplateId(response);
   const template = lgTemplates?.find(({ name }) => name === templateId);
   return response?.value && template?.body
     ? template?.body?.replace(/- /g, '').split(/\r?\n/g) || []
@@ -45,7 +37,7 @@ export const useStringArray = <T extends ArrayBasedStructuredResponseItem>(
   const { onRemoveTemplate, onTemplateChange, onUpdateResponseTemplate } = callbacks;
   const { lgOption, lgTemplates } = options || {};
 
-  const [templateId, setTemplateId] = React.useState(getInitialTemplateId(structuredResponse));
+  const [templateId, setTemplateId] = React.useState(getTemplateId(structuredResponse));
   const [items, setItems] = React.useState<string[]>(getInitialItems(structuredResponse, lgTemplates));
 
   const onChange = React.useCallback(

@@ -91,3 +91,5 @@ export type StructuredResponseItem =
   | InputHintStructuredResponseItem
   | AttachmentLayoutStructuredResponseItem
   | AttachmentsStructuredResponseItem;
+
+export type ArrayBasedStructuredResponseItem = TextStructuredResponseItem | SpeechStructuredResponseItem;

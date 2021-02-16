@@ -7,6 +7,7 @@ import { activityTemplateType } from '../lg/constants';
 import {
   acceptedAttachmentLayout,
   acceptedInputHintValues,
+  ArrayBasedStructuredResponseItem,
   AttachmentLayoutStructuredResponseItem,
   AttachmentsStructuredResponseItem,
   InputHintStructuredResponseItem,
@@ -168,4 +169,10 @@ export const structuredResponseToString = (structuredResponse: PartialStructured
   }, '');
 
   return `[${activityTemplateType}\n${body}]\n`.replace(/\t/gm, defaultIndent);
+};
+
+export const getTemplateId = <T extends ArrayBasedStructuredResponseItem>(response: T): string | undefined => {
+  if (response?.value[0]) {
+    return extractTemplateNameFromExpression(response.value[0]);
+  }
 };
