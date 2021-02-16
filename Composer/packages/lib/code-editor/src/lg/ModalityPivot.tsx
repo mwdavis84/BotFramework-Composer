@@ -41,6 +41,8 @@ import {
 
 const menuItemStyle = { fontSize: FluentTheme.fonts.small.fontSize };
 
+const arrayBasedStructuredResponses: ModalityType[] = ['Text', 'Speak'];
+
 const modalityDocumentUrl =
   'https://docs.microsoft.com/en-us/azure/bot-service/language-generation/language-generation-structured-response-template?view=azure-bot-service-4.0';
 
@@ -72,6 +74,9 @@ const styles: { tabs: Partial<IPivotStyles> } = {
   },
 };
 
+/**
+ * Renders appropriate modality editor given the modality type.
+ */
 const renderModalityEditor = ({
   modality,
   removeModalityDisabled,
@@ -268,7 +273,9 @@ export const ModalityPivot = React.memo((props: Props) => {
           const mappedResponse = structuredResponseToString(mergedResponse);
           onTemplateChange(lgOption.templateId, mappedResponse);
 
-          if (['Text', 'Speak'].includes(modality)) {
+          // Remove template that was created by this modality to represent its variations
+          // Only Speak and Text are eligible
+          if (arrayBasedStructuredResponses.includes(modality)) {
             const templateId = getTemplateId(structuredResponse?.[modality] as ArrayBasedStructuredResponseItem);
 
             if (templateId) {
