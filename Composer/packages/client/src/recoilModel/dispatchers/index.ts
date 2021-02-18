@@ -10,6 +10,7 @@ import { storageDispatcher } from './storage';
 import { exportDispatcher } from './export';
 import { lgDispatcher } from './lg';
 import { luDispatcher } from './lu';
+import { orchestratorDispatcher } from './orchestrator';
 import { qnaDispatcher } from './qna';
 import { triggerDispatcher } from './trigger';
 import { builderDispatcher } from './builder';
@@ -54,6 +55,7 @@ const createDispatchers = () => {
     ...botProjectFileDispatcher(),
     ...zoomDispatcher(),
     ...recognizerDispatcher(),
+    ...orchestratorDispatcher(),
   };
 };
 

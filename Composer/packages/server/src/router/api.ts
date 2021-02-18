@@ -39,6 +39,7 @@ router.delete('/projects/:projectId/files/:name', ProjectController.removeFile);
 router.post('/projects/:projectId/files', ProjectController.createFile);
 router.get('/projects/:projectId/skill/retrieveSkillManifest', ProjectController.getSkill);
 router.post('/projects/:projectId/build', ProjectController.build);
+router.post('/projects/:projectId/crossbuild', ProjectController.crossBuildLu);
 router.post('/projects/:projectId/qnaSettings/set', ProjectController.setQnASettings);
 router.post('/projects/:projectId/project/saveAs', ProjectController.saveProjectAs);
 router.get('/projects/:projectId/export', ProjectController.exportProject);

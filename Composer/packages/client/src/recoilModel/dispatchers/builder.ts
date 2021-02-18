@@ -3,7 +3,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 
 import { useRecoilCallback, CallbackInterface } from 'recoil';
-import { ILuisConfig, IQnAConfig, LUISLocales } from '@bfc/shared';
+import { DialogInfo, ILuisConfig, IQnAConfig, ITrigger, LuFile, LUISLocales, SDKKinds } from '@bfc/shared';
 import formatMessage from 'format-message';
 import difference from 'lodash/difference';
 
@@ -12,11 +12,24 @@ import { Text, BotStatus } from '../../constants';
 import httpClient from '../../utils/httpUtil';
 import luFileStatusStorage from '../../utils/luFileStatusStorage';
 import qnaFileStatusStorage from '../../utils/qnaFileStatusStorage';
-import { luFilesState, qnaFilesState, botStatusState, botRuntimeErrorState, settingsState } from '../atoms';
-import { dialogsSelectorFamily } from '../selectors';
+import { LuProviderType } from './../../../types/src/indexers';
+import {
+  luFilesState,
+  qnaFilesState,
+  botStatusState,
+  botRuntimeErrorState,
+  settingsState,
+  dialogState,
+} from '../atoms';
+import {
+  dialogsSelectorFamily,
+  dialogsWithLuProviderSelectorFamily,
+  localBotsWithoutErrorsSelector,
+} from '../selectors';
 import { getReferredQnaFiles } from '../../utils/qnaUtil';
 
 import { addNotificationInternal, createNotification } from './notification';
+import { getLuProvider } from '../../utils/dialogUtil';
 
 const checkEmptyQuestionOrAnswerInQnAFile = (sections) => {
   return sections.some((s) => !s.Answer || s.Questions.some((q) => !q.content));
@@ -33,6 +46,24 @@ const setLuisBuildNotification = (callbackHelpers: CallbackInterface, unsupporte
   addNotificationInternal(callbackHelpers, notification);
 };
 
+const crossProjectBuild = async (
+  projectId: string,
+  rootBotDialogs: DialogInfo,
+  rootBotLuFiles: LuFile[],
+  skillLUFiles: LuFile[]
+) => {
+  //supports orchestrator only
+  if (rootBotDialogs.luProvider !== SDKKinds.OrchestratorRecognizer) {
+    return;
+  }
+  //const parentLU = rootBotLuFiles.filter((lu)=>lu.id === rootBotDialogs.id);
+
+  return await httpClient.post(`/projects/${projectId}/crossbuild`, {
+    parentLU: rootBotLuFiles,
+    luFilesToMerge: skillLUFiles,
+  });
+};
+
 export const builderDispatcher = () => {
   const build = useRecoilCallback(
     (callbackHelpers: CallbackInterface) => async (
@@ -41,7 +72,7 @@ export const builderDispatcher = () => {
       qnaConfig: IQnAConfig
     ) => {
       const { set, snapshot } = callbackHelpers;
-      const dialogs = await snapshot.getPromise(dialogsSelectorFamily(projectId));
+      const dialogs = await snapshot.getPromise(dialogsWithLuProviderSelectorFamily(projectId));
       const luFiles = await snapshot.getPromise(luFilesState(projectId));
       const qnaFiles = await snapshot.getPromise(qnaFilesState(projectId));
       const { languages } = await snapshot.getPromise(settingsState(projectId));
@@ -78,6 +109,30 @@ export const builderDispatcher = () => {
         luFileStatusStorage.publishAll(projectId);
         qnaFileStatusStorage.publishAll(projectId);
         set(botStatusState(projectId), BotStatus.published);
+
+        //do orchestrator skill integration
+        const rootDialogs = dialogs.filter((d) => d.isRoot)?.[0];
+
+        if (rootDialogs.luProvider === SDKKinds.OrchestratorRecognizer) {
+          const rootDialog = dialogs.filter((d) => d.isRoot)?.[0];
+          const parentLU = luFiles.filter((lu) => lu.id.startsWith(rootDialog.luFile));
+          let skillLus: LuFile[] = [];
+
+          const botProjects = await snapshot.getPromise(localBotsWithoutErrorsSelector);
+          for (var project of botProjects.filter((p) => p !== projectId)) {
+            const dialogs = await snapshot.getPromise(dialogsWithLuProviderSelectorFamily(project));
+            let rootDialog = dialogs.filter((d) => d.isRoot)?.[0];
+
+            if (rootDialog.luProvider) {
+              let lus = await snapshot.getPromise(luFilesState(project));
+              let localSkillLu = lus.find((lu) => lu.id.startsWith(rootDialog.luFile) && !lu.empty);
+              if (localSkillLu) {
+                skillLus.push(localSkillLu);
+              }
+            }
+          }
+          await crossProjectBuild(projectId, rootDialog, parentLU, skillLus);
+        }
       } catch (err) {
         set(botStatusState(projectId), BotStatus.failed);
         set(botRuntimeErrorState(projectId), {
@@ -87,6 +142,7 @@ export const builderDispatcher = () => {
       }
     }
   );
+
   return {
     build,
   };

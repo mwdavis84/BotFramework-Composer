@@ -385,6 +385,28 @@ async function build(req: Request, res: Response) {
   }
 }
 
+async function crossBuildLu(req: Request, res: Response) {
+  const projectId = req.params.projectId;
+  const user = await ExtensionContext.getUserFromRequest(req);
+
+  // Disable Express' built in 2 minute timeout for requests. Otherwise, large models may fail to build.
+  (req as any).setTimeout(0, () => {
+    throw new Error('LU publish process timed out.');
+  });
+
+  const currentProject = await BotProjectService.getProjectById(projectId, user);
+
+  const { parentLU, luFilesToMerge } = req.body;
+
+  try {
+    res.status(200).json(await currentProject.crossBuildLu(parentLU, luFilesToMerge));
+  } catch (e) {
+    res.status(400).json({
+      message: e.message,
+    });
+  }
+}
+
 async function getAllProjects(req: Request, res: Response) {
   const storageId = 'default';
   const folderPath = Path.resolve(settings.botsFolder);
@@ -524,6 +546,7 @@ export const ProjectController = {
   removeFile,
   getSkill,
   build,
+  crossBuildLu,
   setQnASettings,
   exportProject,
   saveProjectAs,

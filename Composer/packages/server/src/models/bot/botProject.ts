@@ -16,6 +16,7 @@ import {
   FileExtensions,
   DialogUtils,
   checkForPVASchema,
+  LuFile,
 } from '@bfc/shared';
 import merge from 'lodash/merge';
 import { UserIdentity } from '@bfc/extension';
@@ -498,6 +499,18 @@ export class BotProject implements IBotProject {
       );
       await this.builder.build(luFiles, qnaFiles, Array.from(this.files.values()) as FileInfo[], emptyFiles);
     }
+  };
+
+  public crossBuildLu = async (parentLU: LuFile, luResources: LuFile[]) => {
+    // const luFiles: FileInfo[] = [];
+    // luResources.map(({ id }) => {
+    //   const fileName = `${id}.lu`;
+    //   const f = this.files.get(fileName);
+    //   if (f) {
+    //     luFiles.push(f);
+    //   }
+    // });
+    return await this.builder.crossBuildLu(parentLU, luResources);
   };
 
   public cloneFiles = async (locationRef: LocationRef): Promise<LocationRef> => {

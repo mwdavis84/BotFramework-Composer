@@ -129,6 +129,7 @@ export const projectDispatcher = () => {
         set(botProjectIdsState, (current) => [...current, projectId]);
         await dispatcher.addLocalSkillToBotProjectFile(projectId);
         navigateToSkillBot(rootBotProjectId, projectId, mainDialog);
+        await dispatcher.createAutomaticTrigger(rootBotProjectId, projectId);
       } catch (ex) {
         handleProjectFailure(callbackHelpers, ex);
       } finally {
@@ -192,6 +193,7 @@ export const projectDispatcher = () => {
         set(botProjectIdsState, (current) => [...current, projectId]);
         await dispatcher.addLocalSkillToBotProjectFile(projectId);
         navigateToSkillBot(rootBotProjectId, projectId, mainDialog);
+        await dispatcher.createAutomaticTrigger(rootBotProjectId, projectId);
         return projectId;
       } catch (ex) {
         handleProjectFailure(callbackHelpers, ex);

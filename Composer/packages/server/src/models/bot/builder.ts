@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { pathExists, writeFile, copy } from 'fs-extra';
-import { FileInfo, IConfig, SDKKinds } from '@bfc/shared';
+import { copy, readFile } from 'fs-extra';
+import { FileInfo, IConfig, LuFile, SDKKinds } from '@bfc/shared';
 import { ComposerReservoirSampler } from '@microsoft/bf-dispatcher/lib/mathematics/sampler/ComposerReservoirSampler';
 import { luImportResolverGenerator, getLUFiles, getQnAFiles } from '@bfc/shared/lib/luBuildResolver';
 import { Orchestrator } from '@microsoft/bf-orchestrator';
@@ -114,6 +114,36 @@ export class Builder {
     }
   };
 
+  public crossBuildLu = async (parentLU: LuFile, luFilesToMerge: LuFile[]) => {
+    //let isEn = parentLU.id.split('.')?.[1]?.toLowerCase()?.startsWith('en') ?? 'en';
+    let isEn = true;
+
+    const nlrList = await this.runOrchestratorNlrList();
+
+    let model = isEn ? nlrList?.defaults?.en_intent : nlrList?.defaults?.multilingual_intent;
+
+    const modelPath = Path.resolve(await this.getModelPathAsync(), model.replace('.onnx', ''));
+
+    const bluFilePath = Path.resolve(this.generatedFolderPath, parentLU[0].id + '.blu');
+    const snapshotData = new Uint8Array(await readFile(bluFilePath));
+
+    const luObjects = luFilesToMerge.map((fi) => {
+      let skillName = fi.id.split('.')?.[0];
+      return {
+        id: skillName,
+        skillName,
+        content: fi.content,
+      };
+    });
+
+    let result = await Orchestrator.addAsync(modelPath, snapshotData, luObjects, true);
+
+    await this.storage.writeFile(bluFilePath, Buffer.from(result.snapshot));
+
+    let mapped = result.outputs.map((r) => r.recognizer.orchestratorRecognizer);
+    return mapped;
+  };
+
   public getQnaEndpointKey = async (subscriptionKey: string, config: IConfig) => {
     try {
       const subscriptionKeyEndpoint = `https://${config?.qnaRegion}.api.cognitive.microsoft.com/qnamaker/v4.0`;
@@ -195,7 +225,7 @@ export class Builder {
     }
 
     const orchestratorSettingsPath = Path.resolve(this.generatedFolderPath, 'orchestrator.settings.json');
-    await writeFile(orchestratorSettingsPath, JSON.stringify(orchestratorSettings));
+    await this.storage.writeFile(orchestratorSettingsPath, JSON.stringify(orchestratorSettings));
   };
 
   /**
@@ -221,7 +251,7 @@ export class Builder {
       const bluFilePath = Path.resolve(this.generatedFolderPath, dialog.id.replace('.lu', '.blu'));
       snapshots[dialog.id.replace('.lu', '').replace(/[-.]/g, '_')] = bluFilePath;
 
-      await writeFile(bluFilePath, Buffer.from(dialog.snapshot));
+      await this.storage.writeFile(bluFilePath, Buffer.from(dialog.snapshot));
     }
 
     return snapshots;
@@ -254,7 +284,7 @@ export class Builder {
       log(status);
     }
   ): Promise<void> {
-    if (!(await pathExists(modelPath))) {
+    if (!(await this.storage.exists(modelPath))) {
       await Orchestrator.baseModelGetAsync(modelPath, nlrId, onProgress, onFinish);
     }
   }

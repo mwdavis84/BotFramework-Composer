@@ -48,7 +48,7 @@ export function getDialog(dialogs: DialogInfo[], dialogId: string) {
   return cloneDeep(dialog);
 }
 
-function insert(content, path: string, position: number | undefined, data: any) {
+export function insert(content, path: string, position: number | undefined, data: any) {
   const current = get(content, path, []);
   const insertAt = typeof position === 'undefined' ? current.length : position;
   current.splice(insertAt, 0, data);
